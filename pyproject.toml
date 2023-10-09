@@ -13,6 +13,7 @@ psycopg2 = "2.9.9"
 plotly = "5.17.0"
 numpy = "1.26.0"
 pandas = "2.1.1"
+requests = "^2.31.0"
 
 
 [build-system]
