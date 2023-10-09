@@ -1,7 +1,6 @@
 import os
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
-from IPython.display import display, HTML
 import geopandas as gpd
 from QuerySimulator import QuerySimulator
 from db_connect import connect
