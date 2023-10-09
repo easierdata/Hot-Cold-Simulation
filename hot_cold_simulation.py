@@ -3,6 +3,11 @@
 # Standard library imports
 import os
 from collections import OrderedDict
+from multiprocessing import cpu_count
+import time
+import logging
+
+logging.basicConfig(level=logging.INFO)
 
 # Third-party imports
 import geopandas as gpd
@@ -19,6 +24,8 @@ import pandas as pd
 from scipy.spatial import KDTree
 from scipy.stats import truncnorm
 import concurrent.futures
+
+print('Module imports complete')
 
 """Data Import"""
 current_directory = os.path.dirname(os.path.realpath(__file__))
@@ -38,6 +45,8 @@ usa_regions = usa_regions.set_geometry('geometry')
 usa_landsat_path = os.path.join(current_directory, 'data', 'USA_Landsat', 'usa_landsat.shp')
 usa_landsat = gpd.read_file(usa_landsat_path)
 usa_landsat = usa_landsat.set_geometry('geometry')
+
+print('Data Loaded')
 
 """PostgreSQL Database Setup for Parallelization"""
 DB_NAME = "railway"
@@ -107,16 +116,48 @@ class QuerySimulator:
         average_free_requests = total_free_requests / num_runs
         return average_free_requests
 
-    def parallelized_monte_carlo_simulation(self, num_runs):
+    # MultiProcessing Monte Carlo [BROKEN]
+    def multiprocessing_monte_carlo_simulation(self, num_runs):
         """Execute the Monte Carlo simulation for a specified number of runs using parallel threads."""
-        with concurrent.futures.ThreadPoolExecutor(max_workers=7) as executor:
+        logging.info(f"Starting parallelized Monte Carlo simulation with {num_runs} runs.")
+
+        with concurrent.futures.ProcessPoolExecutor(max_workers=cpu_count()) as executor:
             # Use a loop to run the simulation num_runs times
             futures = [executor.submit(self.run_simulation) for _ in range(num_runs)]
-            results = [f.result() for f in concurrent.futures.as_completed(futures)]
+            
+            results = []
+            for i, f in enumerate(concurrent.futures.as_completed(futures), 1):
+                result = f.result()
+                results.append(result)
+                logging.info(f"Completed simulation {i} of {num_runs}")
 
         total_free_requests = sum(free_requests for _, free_requests in results)
         average_free_requests = total_free_requests / num_runs
+
+        logging.info(f"Finished all simulations. Average Free Requests: {average_free_requests}")
         return average_free_requests
+
+    # MultiThreaded Monte Carlo
+    def parallelized_monte_carlo_simulation(self, num_runs):
+        """Execute the Monte Carlo simulation for a specified number of runs using parallel threads."""
+        logging.info(f"Starting parallelized Monte Carlo simulation with {num_runs} runs.")
+
+        with concurrent.futures.ThreadPoolExecutor(max_workers=cpu_count()) as executor:
+            # Use a loop to run the simulation num_runs times
+            futures = [executor.submit(self.run_simulation) for _ in range(num_runs)]
+            
+            results = []
+            for i, f in enumerate(concurrent.futures.as_completed(futures), 1):
+                result = f.result()
+                results.append(result)
+                logging.info(f"Completed simulation {i} of {num_runs}")
+
+        total_free_requests = sum(free_requests for _, free_requests in results)
+        average_free_requests = total_free_requests / num_runs
+
+        logging.info(f"Finished all simulations. Average Free Requests: {average_free_requests}")
+        return average_free_requests
+
 
     def run_simulation(self):
           """Execute the simulation."""
@@ -213,6 +254,8 @@ def linear_combinations(step=0.05):
 
     return combinations
 
+print('Functions loaded, Execution Starting')
+
 """Weights Analysis"""
 simulator_results = {}
 step_size = 0.1
@@ -222,13 +265,19 @@ print(f"For step size {step_size}, there are {total_weights} combinations.\n")
 
 for idx, weights in enumerate(weights_list, 1):
     print(f"Running simulation {idx} out of {total_weights} for weights {weights}...")
+    
+    start_time = time.time()
 
     conn = connect()
-    simulator = QuerySimulator(usa_regions, usa_states, usa_counties, conn, num=100, weights=weights, hot_layer_constraint=250)
-    average_free_requests = simulator.parallelized_monte_carlo_simulation(10)
+    if __name__ == '__main__':
+        simulator = QuerySimulator(usa_regions, usa_states, usa_counties, conn, num=100, weights=weights, hot_layer_constraint=250)
+        average_free_requests = simulator.parallelized_monte_carlo_simulation(10)
     simulator_results[tuple(weights)] = average_free_requests
-
+    
+    end_time = time.time()
+    elapsed_time = end_time - start_time
     print(f"Finished simulation {idx}. Average Free Requests: {average_free_requests}\n")
+    print(f"Simulation took {elapsed_time:.2f} seconds .\n")
 
     conn.close()
 
