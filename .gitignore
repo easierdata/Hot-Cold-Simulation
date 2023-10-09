@@ -13,6 +13,8 @@ develop-eggs/
 dist/
 downloads/
 eggs/
+animation/
+monte_carlo_results/
 .eggs/
 lib/
 lib64/

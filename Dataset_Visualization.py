@@ -35,7 +35,7 @@ simulator = QuerySimulator(
     states=usa_states,
     counties=usa_counties,
     conn=conn,
-    num=100,  # number of queries
+    num=3,  # number of queries
     weights=[0.01, 0.24, 0.75],  # weights for region, state, and county respectively
     hot_layer_constraint=250,  # maximum number of landsat scenes in the hot layer
     debug_mode=True
@@ -61,11 +61,18 @@ def animate(i):
 
 anim = FuncAnimation(fig, animate, frames=len(history), repeat=False)
 
-# Display the animation object
-anim.save('animation.html', writer='html')
+# Create the animation directory
+animation_dir = os.path.join(os.getcwd(), 'animation')
+
+# Save the animation
+animation_file_path = os.path.join(animation_dir, 'animation.html')
+anim.save(animation_file_path, writer='html')
+
+# Save the HTML content
 html_content = anim.to_jshtml()
-with open("animation.html", "w") as file:
+with open(animation_file_path, "w") as file:
     file.write(html_content)
 
-webbrowser.open('file://' + os.path.realpath('animation.html'))
+# Open the animation in the web browser
+webbrowser.open('file://' + os.path.realpath(animation_file_path))
 

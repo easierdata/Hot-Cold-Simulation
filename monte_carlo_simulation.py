@@ -1,9 +1,9 @@
-## Package Import
-
 # Standard library imports
 import os
 from collections import OrderedDict
 from multiprocessing import cpu_count
+import sys
+import contextlib
 import time
 import logging
 logging.basicConfig(level=logging.INFO)
@@ -18,7 +18,23 @@ import pandas as pd
 from QuerySimulator import QuerySimulator
 from db_connect import connect
 
-print('Module imports complete')
+# Create and configure a custom logger
+logger = logging.getLogger('monte_carlo_logger')
+logger.setLevel(logging.INFO)
+formatter = logging.Formatter('%(message)s')
+
+# Create handlers
+stream_handler = logging.StreamHandler()
+stream_handler.setFormatter(formatter)
+
+file_handler = logging.FileHandler(os.path.join(os.getcwd(), 'monte_carlo_results', 'results.log'))
+file_handler.setFormatter(formatter)
+
+# Add handlers to the logger
+logger.addHandler(stream_handler)
+logger.addHandler(file_handler)
+
+logger.info('Module imports complete')
 
 """Data Import"""
 current_directory = os.path.dirname(os.path.realpath(__file__))
@@ -39,7 +55,7 @@ usa_landsat_path = os.path.join(current_directory, 'data', 'USA_Landsat', 'usa_l
 usa_landsat = gpd.read_file(usa_landsat_path)
 usa_landsat = usa_landsat.set_geometry('geometry')
 
-print('Data Loaded')
+logger.info('Data Loaded')
 
 """Execution"""
 #Function to create weights for requests
@@ -56,17 +72,17 @@ def linear_combinations(step=0.05):
 
     return combinations
 
-print('Functions loaded, Execution Starting')
+logger.info('Functions loaded, Execution Starting')
 
 """ Weights Analysis """
 simulator_results = {}
-step_size = 0.02
+step_size = 0.2
 weights_list = list(linear_combinations(step_size))
 total_weights = len(weights_list)
-print(f"For step size {step_size}, there are {total_weights} combinations.\n")
+logger.info(f"For step size {step_size}, there are {total_weights} combinations.\n")
 
 for idx, weights in enumerate(weights_list, 1):
-    print(f"Running simulation {idx} out of {total_weights} for weights {weights}...")
+    logger.info(f"Running simulation {idx} out of {total_weights} for weights {weights}...")
     
     start_time = time.time()
 
@@ -78,14 +94,10 @@ for idx, weights in enumerate(weights_list, 1):
     
     end_time = time.time()
     elapsed_time = end_time - start_time
-    print(f"Finished simulation {idx}. Average Free Requests: {average_free_requests}\n")
-    print(f"Simulation took {elapsed_time:.2f} seconds .\n")
+    logger.info(f"Finished simulation {idx}. Average Free Requests: {average_free_requests}\n")
+    logger.info(f"Simulation took {elapsed_time:.2f} seconds .\n")
 
     conn.close()
-
-""" Saving Results"""
-df = pd.DataFrame(list(simulator_results.items()), columns=["Weights", "Average Free Requests"])
-df.to_csv('results.csv', index=False)
 
 """ Plotting Results """
 x, y, z, values = [], [], [], []
@@ -102,8 +114,8 @@ max_index = np.argmax(values)
 optimal_weights = (x[max_index], y[max_index], z[max_index])
 max_free_requests = values[max_index]
 
-print(f"Optimal weights (Region, State, County): {optimal_weights}")
-print(f"Maximum average free requests: {max_free_requests}")
+logger.info(f"Optimal weights (Region, State, County): {optimal_weights}")
+logger.info(f"Maximum average free requests: {max_free_requests}")
 
 
 x, y, z, values = [], [], [], []
@@ -141,3 +153,14 @@ fig.update_layout(scene=dict(
 
 # Display the plot
 fig.show()
+
+"""  Saving Results """
+monte_carlo_results_dir = os.path.join(os.getcwd(), 'monte_carlo_results')
+
+df = pd.DataFrame(list(simulator_results.items()), columns=["Weights", "Average Free Requests"])
+results_csv_path = os.path.join(monte_carlo_results_dir, 'results.csv')
+df.to_csv(results_csv_path, index=False)
+
+""" Saving Plot """
+plot_file_path = os.path.join(monte_carlo_results_dir, 'plot.html')
+fig.write_html(plot_file_path)
