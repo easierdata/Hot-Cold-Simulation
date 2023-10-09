@@ -3,7 +3,6 @@ import numpy as np
 import logging
 logging.basicConfig(level=logging.INFO)
 import concurrent.futures
-import psycopg2
 from LRUCache import LRUCache
 from db_connect import connect
 
