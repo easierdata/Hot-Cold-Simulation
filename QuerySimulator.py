@@ -20,27 +20,6 @@ class QuerySimulator:
         self.lru = LRUCache(self.hot_layer_constraint)
         self.debug_mode = debug_mode
 
-    # MultiProcessing Monte Carlo [BROKEN]
-    def multiprocessing_monte_carlo_simulation(self, num_runs):
-        """Execute the Monte Carlo simulation for a specified number of runs using parallel threads."""
-        logging.info(f"Starting parallelized Monte Carlo simulation with {num_runs} runs.")
-
-        with concurrent.futures.ProcessPoolExecutor(max_workers=cpu_count()) as executor:
-            # Use a loop to run the simulation num_runs times
-            futures = [executor.submit(self.run_simulation) for _ in range(num_runs)]
-            
-            results = []
-            for i, f in enumerate(concurrent.futures.as_completed(futures), 1):
-                result = f.result()
-                results.append(result)
-                logging.info(f"Completed simulation {i} of {num_runs}")
-
-        total_free_requests = sum(free_requests for _, free_requests in results)
-        average_free_requests = total_free_requests / num_runs
-
-        logging.info(f"Finished all simulations. Average Free Requests: {average_free_requests}")
-        return average_free_requests
-
     # MultiThreaded Monte Carlo
     def monte_carlo_simulation(self, num_runs):
         """Execute the Monte Carlo simulation for a specified number of runs using parallel threads."""
