@@ -1,17 +1,33 @@
 from multiprocessing import cpu_count
 import numpy as np
 import concurrent.futures
-from LRUCache import LRUCache
-from db_connect import connect
+from .LRUCache import LRUCache
+from .db_connect import connect
 
 class simulation:
-    def __init__(self, regions_count, states_count, counties_count, weights, num, hot_layer_constraint):
+    def __init__(self, regions_count, states_count, counties_count, weights, num, hot_layer_constraint, preload_data=False):
         self.regions_count = regions_count
         self.states_count = states_count
         self.counties_count = counties_count
         self.weights = weights
         self.num = num
         self.lru = LRUCache(hot_layer_constraint)
+        if preload_data:
+            self.load_data()
+
+    def load_data(self):
+        with connect() as conn:
+            cursor = conn.cursor()
+            self.regions_data = self.fetch_data(cursor, "regions_mapping", self.regions_count)
+            self.states_data = self.fetch_data(cursor, "states_mapping", self.states_count)
+            self.counties_data = self.fetch_data(cursor, "counties_mapping", self.counties_count)
+            cursor.close()
+
+    def fetch_data(self, cursor, table, count):
+        query = f"SELECT feature_index, landsat_FIDs FROM {table} ORDER BY feature_index LIMIT %s"
+        cursor.execute(query, (count,))
+        return {row[0]: row[1].split(',') for row in cursor.fetchall()}
+
 
     def monte_carlo_simulation(self, num_runs):
         """Execute the Monte Carlo simulation for a specified number of runs using parallel threads."""
@@ -37,26 +53,15 @@ class simulation:
             free_requests_count = 0
 
             for _ in range(self.num):
-                # Randomly choose a scale
                 scale = np.random.choice(['regions', 'states', 'counties'], p=self.weights)
-
-                # Generate a random feature ID based on the scale
                 if scale == 'regions':
-                    feature_id = np.random.randint(0, self.regions_count)
-                    table = "regions_mapping"
+                    data = self.regions_data
                 elif scale == 'states':
-                    feature_id = np.random.randint(0, self.states_count)
-                    table = "states_mapping"
+                    data = self.states_data
                 else:
-                    feature_id = np.random.randint(0, self.counties_count)
-                    table = "counties_mapping"
-
-                # Fetch the required landsat scenes for the chosen feature
-                query = f"SELECT landsat_FIDs FROM {table} WHERE feature_index=%s"
-                cursor.execute(query, (feature_id,))
-                result = cursor.fetchone()
-
-                landsat_scenes = result[0].split(',')
+                    data = self.counties_data
+                feature_id = np.random.choice(list(data.keys()))
+                landsat_scenes = data[feature_id]
 
                 moved_to_hot = False
                 for scene in landsat_scenes:
