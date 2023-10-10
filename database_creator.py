@@ -1,6 +1,6 @@
 import os
 import geopandas as gpd
-from db_connect import connect
+from modules.db_connect import connect
 
 """Data Import"""
 current_directory = os.path.dirname(os.path.realpath(__file__))

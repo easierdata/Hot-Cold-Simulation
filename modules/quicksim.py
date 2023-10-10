@@ -1,7 +1,7 @@
 from multiprocessing import cpu_count
 import numpy as np
 import concurrent.futures
-from .LRUCache import LRUCache
+from .lru_cache import LRUCache
 from .db_connect import connect
 
 class simulation:

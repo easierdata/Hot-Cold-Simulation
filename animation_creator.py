@@ -2,8 +2,8 @@ import os
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 import geopandas as gpd
-from QuerySimulator import QuerySimulator
-from db_connect import connect
+from modules.query_simulator import QuerySimulator
+from modules.db_connect import connect
 import webbrowser
 print('Loaded Modules')
 
