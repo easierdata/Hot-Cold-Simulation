@@ -1,6 +1,18 @@
 # Hot-Cold-Simulation
 
-A brief description of what this project does and its purpose.
+Description:
+
+The Hot-Cold Simulation project aims to simulate and analyze the performance of a cache based decentralized storage system under different weight configurations across three geographical scales - regions, states, and counties. Utilizing a Least Recently Used (LRU) Cache algorithm, the simulation explores how different weight distributions affect the number of free requests achievable before a cache miss occurs, triggering a move to the hot layer of the cache.
+
+By leveraging various Python libraries and a PostgreSQL database, this simulation iteratively tests different weight combinations through a Monte Carlo simulation approach. It logs the average free requests for each weight combination and calculates the optimal weight configuration to achieve the most free requests.
+
+Additionally, the project provides visualization tools to help users better understand the simulation results, including 3D scatter plots and animations showing cache state across queries.
+
+Through this simulation project, users can gain insights into the storage system performance under various scenarios, which could be instrumental in optimizing cache configurations for geospatial data handling in real-world applications.
+
+Purpose:
+
+The primary purpose of the Hot-Cold Simulation project is to provide a systematic approach to understanding and optimizing cache performance for handling geospatial requests at different geographical scales. By determining the optimal weight configurations, it aims to contribute towards more efficient cache management in systems dealing with geospatial data, hence potentially improving response times and reducing computational resources usage.
 
 ## Table of Contents
 
@@ -156,4 +168,4 @@ I would like to extend my heartfelt gratitude to the following individuals and o
 - **Special Thanks:**
   - I would also like to extend a heartfelt thanks to my close friends, who always pushed me to go further and learn more.
 
-We also appreciate the broader geospatial science community for their continuous engagement and encouragement. Your enthusiasm drives the ongoing improvement of this project.
+I also appreciate the broader geospatial science community for their continuous engagement and encouragement. Your enthusiasm drives the ongoing improvement of this project.
