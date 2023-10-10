@@ -1,26 +1,23 @@
 # Standard library imports
 import os
-from collections import OrderedDict
-from multiprocessing import cpu_count
-import sys
-import contextlib
 import time
 import logging
+from os import cpu_count
 logging.basicConfig(level=logging.INFO)
 
 # Third-party imports
-import geopandas as gpd
 import plotly.graph_objects as go
 import numpy as np
 import pandas as pd
 
 # Custom imports
-from QuerySimulator import QuerySimulator
+from quicksim import simulation
 from db_connect import connect
 
 # Create and configure a custom logger
 logger = logging.getLogger('monte_carlo_logger')
 logger.setLevel(logging.INFO)
+logger.propagate = False
 formatter = logging.Formatter('%(message)s')
 
 # Create handlers
@@ -30,36 +27,29 @@ stream_handler.setFormatter(formatter)
 file_handler = logging.FileHandler(os.path.join(os.getcwd(), 'monte_carlo_results', 'results.log'))
 file_handler.setFormatter(formatter)
 
+for handler in logger.handlers[:]:
+    logger.removeHandler(handler)
+
 # Add handlers to the logger
 logger.addHandler(stream_handler)
 logger.addHandler(file_handler)
 
-logger.info('Module imports complete')
+conn = connect()
+def get_count(table_name):
+    with conn.cursor() as cursor:
+        cursor.execute(f"SELECT COUNT(*) FROM {table_name};")
+        count = cursor.fetchone()[0]
+    return count
 
-"""Data Import"""
-current_directory = os.path.dirname(os.path.realpath(__file__))
+regions_count = get_count('regions_mapping')
+states_count = get_count('states_mapping')
+counties_count = get_count('counties_mapping')
 
-usa_states_path = os.path.join(current_directory, 'data', 'USA_States', 'usa_states.shp')
-usa_states = gpd.read_file(usa_states_path)
-usa_states = usa_states.set_geometry('geometry')
-
-usa_counties_path = os.path.join(current_directory, 'data', 'USA_Counties', 'usa_counties.shp')
-usa_counties = gpd.read_file(usa_counties_path)
-usa_counties = usa_counties.set_geometry('geometry')
-
-usa_regions_path = os.path.join(current_directory, 'data', 'USA_Regions', 'usa_regions.shp')
-usa_regions = gpd.read_file(usa_regions_path)
-usa_regions = usa_regions.set_geometry('geometry')
-
-usa_landsat_path = os.path.join(current_directory, 'data', 'USA_Landsat', 'usa_landsat.shp')
-usa_landsat = gpd.read_file(usa_landsat_path)
-usa_landsat = usa_landsat.set_geometry('geometry')
-
-logger.info('Data Loaded')
+conn.close()
 
 """Execution"""
 #Function to create weights for requests
-def linear_combinations(step=0.05):
+def linear_combinations(step):
     combinations = []
     for i in np.arange(0, 1+step, step):
         for j in np.arange(0, 1-i+step, step):
@@ -72,34 +62,45 @@ def linear_combinations(step=0.05):
 
     return combinations
 
-logger.info('Functions loaded, Execution Starting')
-
 """ Weights Analysis """
-simulator_results = {}
-step_size = 0.2
+
+# Set Parameters
+step_size = 0.1
+num_requests = 100
+hot_layer_constraint = 250
 weights_list = list(linear_combinations(step_size))
 total_weights = len(weights_list)
-logger.info(f"For step size {step_size}, there are {total_weights} combinations.\n")
+init_time = time.time()
 
+logger.info(f"Analysis Initialized with the following parameters\n")
+logger.info(f"Feature Scale Weights Step Size: {step_size}")
+logger.info(f"Number of Requests per Simulation: {num_requests}")
+logger.info(f"Hot Layer Constraing: {hot_layer_constraint}")
+logger.info(f"Analysis Starting at {time.time()}\n")
+
+simulator_results = {}
 for idx, weights in enumerate(weights_list, 1):
-    logger.info(f"Running simulation {idx} out of {total_weights} for weights {weights}...")
-    
     start_time = time.time()
-
-    conn = connect()
     if __name__ == '__main__':
-        simulator = QuerySimulator(usa_regions, usa_states, usa_counties, conn, num=100, weights=weights, hot_layer_constraint=250)
-        average_free_requests = simulator.monte_carlo_simulation(8)
+        simulator = simulation(
+            regions_count=regions_count,
+            states_count=states_count,
+            counties_count=counties_count,
+            num=num_requests,
+            weights=weights,
+            hot_layer_constraint=hot_layer_constraint
+        )
+
+        average_free_requests = simulator.monte_carlo_simulation(cpu_count())
+
+        logger.info(f"Starting simulation {idx} of {total_weights} with {cpu_count()} runs")
+        logger.info(f"Simulation {idx} completed in {(time.time() - start_time):.2f} seconds")
+        logger.info(f"Average free requests: {average_free_requests}")
+        logger.info("------------------------------------------\n")
+
     simulator_results[tuple(weights)] = average_free_requests
-    
-    end_time = time.time()
-    elapsed_time = end_time - start_time
-    logger.info(f"Finished simulation {idx}. Average Free Requests: {average_free_requests}\n")
-    logger.info(f"Simulation took {elapsed_time:.2f} seconds .\n")
 
-    conn.close()
-
-""" Plotting Results """
+""" Calculating Results """
 x, y, z, values = [], [], [], []
 for weight, avg_free in simulator_results.items():
     x.append(weight[0])
@@ -114,17 +115,11 @@ max_index = np.argmax(values)
 optimal_weights = (x[max_index], y[max_index], z[max_index])
 max_free_requests = values[max_index]
 
+logger.info(f"Analysis completed in {(time.time() - init_time):.2f} seconds")
 logger.info(f"Optimal weights (Region, State, County): {optimal_weights}")
 logger.info(f"Maximum average free requests: {max_free_requests}")
 
-
-x, y, z, values = [], [], [], []
-for weight, avg_free in simulator_results.items():
-    x.append(weight[0])
-    y.append(weight[1])
-    z.append(weight[2])
-    values.append(avg_free)
-
+""" Plotting Results """
 fig = go.Figure(data=[go.Scatter3d(
     x=x,
     y=y,
