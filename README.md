@@ -70,7 +70,7 @@ This will generate a 3D plot showing the average free requests for different wei
 
 ### Animation Creator: `animation_creator.py`
 
-This script creates an animation showing the state of the hot layer over time as queries are executed and save the logs, and plot to the `animation` directory.
+This script creates an animation showing the state of the hot layer over time as queries are executed and save the logs and plot to the `animation` directory. The individual frames of the animation are saved in the `animation_frames` subdirectory.
 
 1. Set the parameters for your simulation in the script:
   ```python
