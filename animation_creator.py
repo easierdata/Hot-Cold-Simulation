@@ -1,11 +1,16 @@
+# Standard Library Imports
 import os
+import webbrowser
+
+# Third Party Imports
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 import geopandas as gpd
-from modules.query_simulator import QuerySimulator
+
+# Custom Imports
+from modules.animation_simulation import SingleSim
 from modules.db_connect import connect
-import webbrowser
-print('Loaded Modules')
+
 
 """Data Import"""
 current_directory = os.path.dirname(os.path.realpath(__file__))
@@ -26,11 +31,9 @@ usa_landsat_path = os.path.join(current_directory, 'data', 'USA_Landsat', 'usa_l
 usa_landsat = gpd.read_file(usa_landsat_path)
 usa_landsat = usa_landsat.set_geometry('geometry')
 
-print('Loaded Data')
-
 # Create an instance of the simulator
 conn = connect()
-simulator = QuerySimulator(
+simulator = SingleSim(
     regions=usa_regions,
     states=usa_states,
     counties=usa_counties,
@@ -44,7 +47,6 @@ simulator = QuerySimulator(
 # Run the simulation
 history, free_requests = simulator.run_simulation()
 conn.close()
-print(f"Number of free requests: {free_requests}")
 
 fig, ax = plt.subplots(figsize=(10, 10))
 

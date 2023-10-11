@@ -4,7 +4,7 @@ import concurrent.futures
 from .lru_cache import LRUCache
 from .db_connect import connect
 
-class simulation:
+class MonteCarloSimulation:
     def __init__(self, regions_count, states_count, counties_count, weights, num, hot_layer_constraint, preload_data=False):
         self.regions_count = regions_count
         self.states_count = states_count
@@ -37,8 +37,8 @@ class simulation:
             futures = [executor.submit(self.run_simulation) for _ in range(num_runs)]
             
             results = []
-            for i, f in enumerate(concurrent.futures.as_completed(futures), 1):
-                result = f.result()
+            for count, future in enumerate(concurrent.futures.as_completed(futures), 1):
+                result = future.result()
                 results.append(result)
 
         total_free_requests = sum(free_requests for free_requests in results)

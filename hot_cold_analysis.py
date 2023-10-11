@@ -9,17 +9,22 @@ import numpy as np
 import pandas as pd
 
 # Custom imports
-from modules.quicksim import simulation
+from modules.monte_carlo_simulation import MonteCarloSimulation
 from modules.logger_config import setup_logger
 from modules.linear_combinations import linear_combinations
 
-logger = setup_logger()
+logger = setup_logger('monte_carlo', 'monte_carlo_results')
+
+# hardcoded to avoid unnecessary database query, do not change
 regions_count = 6
 states_count = 49
 counties_count = 4437
+
+# Set your desired parameters here
 step_size = 0.05
 num_requests = 100
 hot_layer_constraint = 250
+
 weights_list = list(linear_combinations(step_size))
 total_weights = len(weights_list)
 init_time = time.time()
@@ -34,7 +39,7 @@ simulator_results = {}
 for idx, weights in enumerate(weights_list, 1):
     start_time = time.time()
     if __name__ == '__main__':
-        simulator = simulation(
+        simulator = MonteCarloSimulation(
             regions_count=regions_count,
             states_count=states_count,
             counties_count=counties_count,

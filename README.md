@@ -54,38 +54,43 @@ This script conducts a Monte Carlo simulation to analyze how different weighting
 
 1. Set the parameters for your simulation in the script:
    ```python
-   regions_count = 6
-   states_count = 49
-   counties_count = 4437
    step_size = 0.05
    num_requests = 100
    hot_layer_constraint = 250
    ```
+   *  `step_size` decides how many combinations of weights will be created. More details are available under the linear combinations module in [Structure](#structure).
+   *  `num_requests` is how many data requests are within one simulation run.
+   *  `hot_layer_constraint` is the number of how many landsat scenes can be in the hot layer at any given time. The maximum number is 886.
 
 2. Run the script:
     ```python
     python main_script.py
     ```
-This will generate a 3D plot showing the average free requests for different weight combinations, and save the results and plot to the monte_carlo_results directory.
+This will generate a 3D plot showing the average free requests for different weight combinations, and save the results, logs, and plot to the `monte_carlo_results` directory as `results.csv`, `monte_carlo_results.log`, and `plot.html`.
 
 ### Animation Creator: `animation_creator.py`
 
-This script creates an animation showing the state of the hot layer over time as queries are executed.
+This script creates an animation showing the state of the hot layer over time as queries are executed and save the logs, and plot to the `animation` directory.
 
 1. Set the parameters for your simulation in the script:
-```python
-num = 100  # number of queries
-weights = [0.01, 0.24, 0.75]  # weights for region, state, and county respectively
-hot_layer_constraint = 250  # maximum number of landsat scenes in the hot layer
-debug_mode = True
-```
+  ```python
+  num = 100 
+  weights = [0.01, 0.24, 0.75]
+  hot_layer_constraint = 250
+  debug_mode = True
+  ```
+*  `num` is the number of requests for the simulation.
+*  `weights` is the probabilities for each scale. The entries correspond to regions, states, and counties respectively. This array must sum to 1 and contain no negative numbers.
+*  `hot_layer_constraint` is the number of how many landsat scenes can be in the hot layer at any given time. The maximum number is 886.
+*  `debug_mode` allows for detailed logging of the simulation. Turn this off if you are only interested in the animation.
+
 
 2. Run the script:
-```python
-python animation_creator.py
-```
+  ```python
+  python animation_creator.py
+  ```
 
-This will generate an animation showing which landsat scenes are in the hot layer as queries are executed. The animation is saved to the `animation` directory and opened in your web browser.
+This will generate an animation showing which landsat scenes are in the hot layer as queries are executed. The animation is saved to the `animation` directory and opened in your web browser. If `debug_mode` is set to `True`, the log is saved to the `animation` directory as `animation_results.log`. 
 
 ## Structure
 
