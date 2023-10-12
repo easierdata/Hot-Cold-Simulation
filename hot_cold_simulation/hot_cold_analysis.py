@@ -12,12 +12,16 @@ from modules.linear_combinations import linear_combinations
 from modules.logger_config import setup_logger
 
 # Custom imports
-from modules.quicksim import simulation
+from modules.quicksim import MonteCarloSimulation
 
 logger = setup_logger()
+
+# hardcoded to avoid unnecessary database query, do not change
 regions_count = 6
 states_count = 49
 counties_count = 4437
+
+# Set your desired parameters here
 step_size = 0.05
 num_requests = 100
 hot_layer_constraint = 250
@@ -35,7 +39,7 @@ simulator_results = {}
 for idx, weights in enumerate(weights_list, 1):
     start_time = time.time()
     if __name__ == "__main__":
-        simulator = simulation(
+        simulator = MonteCarloSimulation(
             regions_count=regions_count,
             states_count=states_count,
             counties_count=counties_count,
@@ -45,10 +49,10 @@ for idx, weights in enumerate(weights_list, 1):
             preload_data=True,
         )
 
-        average_free_requests = simulator.monte_carlo_simulation(cpu_count() * 3)
+        average_free_requests = simulator.monte_carlo_simulation(cpu_count())
 
         logger.info(
-            f"Starting simulation {idx} of {total_weights} with {cpu_count()*3} runs"
+            f"Starting simulation {idx} of {total_weights} with {cpu_count()} runs"
         )
         logger.info(
             f"Simulation {idx} completed in {(time.time() - start_time):.2f} seconds"
