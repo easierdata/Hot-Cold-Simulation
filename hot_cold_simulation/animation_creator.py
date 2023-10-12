@@ -1,16 +1,18 @@
 import os
 import webbrowser
 from pathlib import Path
-from typing import Any
+from typing import Any, List
 
+# Third Party Imports
 import geopandas as gpd
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
+from matplotlib.artist import Artist
+
+# Custom Imports
 from modules.config import ANIMATION_DIR, DATA_DIR
 from modules.db_connect import connect
-from modules.query_simulator import QuerySimulator
-
-print("Loaded Modules")
+from modules.query_simulator import SingleSim
 
 # Data Import
 usa_states_path = DATA_DIR / "USA_States" / "usa_states.shp"
@@ -29,11 +31,10 @@ usa_landsat_path = DATA_DIR / "USA_Landsat" / "usa_landsat.shp"
 usa_landsat = gpd.read_file(usa_landsat_path)
 usa_landsat = usa_landsat.set_geometry("geometry")
 
-print("Loaded Data")
 
 # Create an instance of the simulator
 conn = connect()
-simulator = QuerySimulator(
+simulator = SingleSim(
     regions=usa_regions,
     states=usa_states,
     counties=usa_counties,
@@ -47,12 +48,11 @@ simulator = QuerySimulator(
 # Run the simulation
 history, free_requests = simulator.run_simulation()
 conn.close()
-print(f"Number of free requests: {free_requests}")
 
 fig, ax = plt.subplots(figsize=(10, 10))
 
 
-def animate(i: Any) -> None:
+def animate(i: Any) -> List[Artist]:
     """_summary_
 
     Args:
@@ -62,11 +62,14 @@ def animate(i: Any) -> None:
     hot_layer_indices = [int(idx) for idx in history[i]]
     hot_layer_gdf = usa_landsat.loc[hot_layer_indices]
     hot_layer_gdf.set_crs(usa_landsat.crs)
-    usa_states.plot(ax=ax, color="blue", edgecolor="black")
-    hot_layer_gdf.plot(ax=ax, color="red", edgecolor="black")
-    ax.set_title(f"Hot Layer State at Query {i + 1}")
+    usa_states_plot = usa_states.plot(ax=ax, color="blue", edgecolor="black")
+    hot_layer_plot = hot_layer_gdf.plot(ax=ax, color="red", edgecolor="black")
+    title_text = ax.set_title(f"Hot Layer State at Query {i + 1}")
     ax.set_xlabel("Longitude")
     ax.set_ylabel("Latitude")
+
+    # Return a list of Artist objects
+    return [usa_states_plot, hot_layer_plot, title_text]
 
 
 anim = FuncAnimation(fig, animate, frames=len(history), repeat=False)
