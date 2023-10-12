@@ -3,12 +3,11 @@ from multiprocessing import cpu_count
 from typing import Any
 
 import numpy as np
+from modules.db_connect import connect  # type: ignore
+from modules.lru_cache import LRUCache  # type: ignore
 
-from hot_cold_simulation.modules.db_connect import connect  # type: ignore
-from hot_cold_simulation.modules.lru_cache import LRUCache  # type: ignore
 
-
-class simulation:
+class MonteCarloSimulation:
     def __init__(
         self,
         regions_count: int,

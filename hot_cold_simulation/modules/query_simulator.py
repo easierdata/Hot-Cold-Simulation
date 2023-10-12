@@ -3,13 +3,13 @@ from typing import Any
 
 import geopandas as gpd
 import numpy as np
-from lru_cache import LRUCache
-from db_connect import connect
+from modules.db_connect import connect  # type: ignore
+from modules.lru_cache import LRUCache  # type: ignore
 
 logging.basicConfig(level=logging.INFO)
 
 
-class QuerySimulator:
+class SingleSim:
     """Simulation"""
 
     def __init__(
