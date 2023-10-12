@@ -1,0 +1,19 @@
+{
+  "recommendations": [
+    "charliermarsh.ruff",
+    "DavidAnson.vscode-markdownlint",
+    "eamodio.gitlens",
+    "esbenp.prettier-vscode",
+    "formulahendry.code-runner",
+    "matangover.mypy",
+    "maximus136.change-string-case",
+    "ms-python.black-formatter",
+    "ms-python.isort",
+    "ms-python.python",
+    "njpwerner.autodocstring",
+    "runarsf.platform-settings",
+    "streetsidesoftware.code-spell-checker",
+    "usernamehw.errorlens",
+    "VisualStudioExptTeam.vscodeintellicode"
+  ]
+}
