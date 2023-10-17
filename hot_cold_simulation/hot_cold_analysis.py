@@ -4,15 +4,15 @@ from os import cpu_count
 from pathlib import Path
 
 import numpy as np
-import pandas as pd
+import pandas as pd  # type: ignore
 
 # Third-party imports
-import plotly.graph_objects as go
-from modules.linear_combinations import linear_combinations
-from modules.logger_config import setup_logger
+import plotly.graph_objects as go  # type: ignore
+from modules.linear_combinations import linear_combinations  # type: ignore
+from modules.logger_config import setup_logger  # type: ignore
 
 # Custom imports
-from modules.quicksim import MonteCarloSimulation
+from modules.quicksim import MonteCarloSimulation  # type: ignore
 
 logger = setup_logger()
 

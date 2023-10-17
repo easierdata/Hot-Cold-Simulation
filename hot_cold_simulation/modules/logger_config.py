@@ -1,7 +1,7 @@
 import logging
 from typing import Optional
 
-from modules.config import MONTE_CARLO_LOG_DIR
+from modules.config import MONTE_CARLO_LOG_DIR  # type: ignore
 
 
 def setup_logger(logger_name: Optional[str] = "logger") -> logging.Logger:

@@ -4,15 +4,15 @@ from pathlib import Path
 from typing import Any, List
 
 # Third Party Imports
-import geopandas as gpd
+import geopandas as gpd  # type: ignore
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 from matplotlib.artist import Artist
 
 # Custom Imports
-from modules.config import ANIMATION_DIR, DATA_DIR
-from modules.db_connect import connect
-from modules.query_simulator import SingleSim
+from modules.config import ANIMATION_DIR, DATA_DIR  # type: ignore
+from modules.db_connect import connect  # type: ignore
+from modules.query_simulator import SingleSim  # type: ignore
 
 # Data Import
 usa_states_path = DATA_DIR / "USA_States" / "usa_states.shp"

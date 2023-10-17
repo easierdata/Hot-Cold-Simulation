@@ -1,9 +1,8 @@
 from typing import Any
 
-import geopandas as gpd
-
-from modules import db_connect
-from modules.config import DATA_DIR
+import geopandas as gpd  # type: ignore
+from modules import db_connect  # type: ignore
+from modules.config import DATA_DIR  # type: ignore
 
 ### Data Import
 usa_states_path = DATA_DIR / "USA_States" / "usa_states.shp"
