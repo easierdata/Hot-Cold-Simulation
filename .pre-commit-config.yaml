@@ -26,7 +26,9 @@ repos:
       - id: check-yaml
       - id: check-toml
       - id: check-json
+        exclude: "^.vscode/.*"
       - id: pretty-format-json
+        exclude: "^.vscode/.*"
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: v1.4.1
     hooks:
