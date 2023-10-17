@@ -41,7 +41,8 @@ class SingleSim:
         self.conn = conn
         self.num = num
         if weights is None:
-            self.weights = [0.05, 0.2, 0.75]
+            weights = [0.05, 0.2, 0.75]
+        self.weights = weights
         self.hot_layer_constraint = hot_layer_constraint
         self.lru = LRUCache(self.hot_layer_constraint)
         self.debug_mode = debug_mode
