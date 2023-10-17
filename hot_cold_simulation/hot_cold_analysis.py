@@ -1,7 +1,7 @@
 # Standard library imports
-import os
 import time
 from os import cpu_count
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -117,14 +117,15 @@ fig.update_layout(
 fig.show()
 
 """  Saving Results """
-monte_carlo_results_dir = os.path.join(os.getcwd(), "monte_carlo_results")
+current_dir = Path.cwd()
+monte_carlo_results_dir = (Path(current_dir) / "monte_carlo_results").resolve()
 
 df = pd.DataFrame(
     list(simulator_results.items()), columns=["Weights", "Average Free Requests"]
 )
-results_csv_path = os.path.join(monte_carlo_results_dir, "results.csv")
+results_csv_path = Path(monte_carlo_results_dir / "results.csv")
 df.to_csv(results_csv_path, index=False)
 
 """ Saving Plot """
-plot_file_path = os.path.join(monte_carlo_results_dir, "plot.html")
+plot_file_path = Path(monte_carlo_results_dir / "plot.html")
 fig.write_html(plot_file_path)
