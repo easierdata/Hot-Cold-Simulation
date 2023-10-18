@@ -1,9 +1,8 @@
 from typing import Any
 
-import geopandas as gpd
-
-from modules import db_connect
-from modules.config import DATA_DIR
+import geopandas as gpd  # type: ignore
+from modules import db_connect  # type: ignore
+from modules.config import DATA_DIR  # type: ignore
 
 ### Data Import
 usa_states_path = DATA_DIR / "USA_States" / "usa_states.shp"
@@ -58,7 +57,7 @@ def populate_table_with_list_mappings_using_index(
         landsat_indices_str = ",".join(map(str, landsat_indices))
         mappings.append((idx, landsat_indices_str))
 
-    with db_connect.connect() as conn:  # type: ignore
+    with db_connect.connect() as conn:
         cursor = conn.cursor()
         cursor.executemany(
             f"""
@@ -70,7 +69,7 @@ def populate_table_with_list_mappings_using_index(
 
 
 # Step 1: Connect to the PostgreSQL database and create the tables
-conn = db_connect.connect()  # type: ignore
+conn = db_connect.connect()
 create_mapping_table_with_list(conn, "regions_mapping")
 create_mapping_table_with_list(conn, "states_mapping")
 create_mapping_table_with_list(conn, "counties_mapping")
