@@ -6,7 +6,7 @@ from typing import Any, List
 # Third Party Imports
 import geopandas as gpd  # type: ignore
 import matplotlib.pyplot as plt
-from matplotlib.animation import FuncAnimation
+from matplotlib.animation import FuncAnimation, PillowWriter
 from matplotlib.artist import Artist
 
 # Custom Imports
@@ -39,7 +39,7 @@ simulator = SingleSim(
     states=usa_states,
     counties=usa_counties,
     conn=conn,
-    num=3,  # number of queries
+    num=100,  # number of queries
     weights=[0.01, 0.24, 0.75],  # weights for region, state, and county respectively
     hot_layer_constraint=250,  # maximum number of landsat scenes in the hot layer
     debug_mode=True,
@@ -51,6 +51,8 @@ conn.close()
 
 fig, ax = plt.subplots(figsize=(10, 10))
 
+minx, miny, maxx, maxy = usa_states.total_bounds
+
 
 def animate(i: Any) -> List[Artist]:
     """_summary_
@@ -59,6 +61,7 @@ def animate(i: Any) -> List[Artist]:
         i (Any): _description_
     """
     ax.clear()
+
     hot_layer_indices = [int(idx) for idx in history[i]]
     hot_layer_gdf = usa_landsat.loc[hot_layer_indices]
     hot_layer_gdf.set_crs(usa_landsat.crs)
@@ -68,6 +71,12 @@ def animate(i: Any) -> List[Artist]:
     ax.set_xlabel("Longitude")
     ax.set_ylabel("Latitude")
 
+    ax.set_xlim(-127, -64)
+    ax.set_ylim(22, 52)
+
+    # Ensuring the aspect ratio remains equal
+    ax.set_aspect("equal", adjustable="box")
+
     # Return a list of Artist objects
     return [usa_states_plot, hot_layer_plot, title_text]
 
@@ -75,6 +84,9 @@ def animate(i: Any) -> List[Artist]:
 anim = FuncAnimation(fig, animate, frames=len(history), repeat=False)
 
 # Save the animation
+gif_writer = PillowWriter(fps=2)
+anim.save(ANIMATION_DIR / "animation.gif", writer=gif_writer)
+
 animation_file_path = Path(ANIMATION_DIR / "animation.html").as_posix()
 anim.save(animation_file_path, writer="html")
 

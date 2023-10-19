@@ -22,7 +22,7 @@ states_count = 49
 counties_count = 4437
 
 # Set your desired parameters here
-step_size = 0.05
+step_size = 0.025
 num_requests = 100
 hot_layer_constraint = 250
 weights_list = list(linear_combinations(step_size))
