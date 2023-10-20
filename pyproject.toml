@@ -27,6 +27,9 @@ pre-commit = "^3.4.0"
 ruff = "^0.0.292"
 python-dotenv = "^1.0.0"
 
+[tool.poetry.scripts]
+generate-config = "hot_cold_simulation.utils.generate_config:generate"
+
 [tool.black]
 line-length = 88
 
