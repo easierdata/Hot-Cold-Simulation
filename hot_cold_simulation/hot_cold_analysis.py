@@ -9,12 +9,13 @@ import pandas as pd  # type: ignore
 # Third-party imports
 import plotly.graph_objects as go  # type: ignore
 from modules.linear_combinations import linear_combinations  # type: ignore
+from modules.config import MONTE_CARLO_LOG_DIR  # type: ignore
 from modules.logger_config import setup_logger  # type: ignore
 
 # Custom imports
 from modules.quicksim import MonteCarloSimulation  # type: ignore
 
-logger = setup_logger()
+logger = setup_logger(MONTE_CARLO_LOG_DIR)
 
 # hardcoded to avoid unnecessary database query, do not change
 regions_count = 6
