@@ -1,6 +1,8 @@
 import concurrent.futures
+import pickle
 from multiprocessing import cpu_count
-from typing import Any
+from pathlib import Path
+from typing import Any, Dict, List
 
 import numpy as np
 from modules.db_connect import connect  # type: ignore
@@ -38,35 +40,32 @@ class MonteCarloSimulation:
         if preload_data:
             self.load_data()
 
-    def load_data(self) -> None:
-        """Load data from the region, states, and counties tables."""
-        with connect() as conn:
-            cursor = conn.cursor()
-            self.regions_data = self.fetch_data(
-                cursor, "regions_mapping", self.regions_count
-            )
-            self.states_data = self.fetch_data(
-                cursor, "states_mapping", self.states_count
-            )
-            self.counties_data = self.fetch_data(
-                cursor, "counties_mapping", self.counties_count
-            )
-            cursor.close()
+    def load_dict_from_file(self, filename: str) -> Dict:
+        current_dir = Path.cwd()
+        data_dicts = (Path(current_dir) / "dictionaries").resolve()
+        """Load dictionary from a file."""
+        with Path.open(data_dicts / filename, "rb") as f:
+            return pickle.load(f)
 
-    def fetch_data(self, cursor: Any, table: str, count: int) -> dict[Any, Any]:
-        """_summary_
+    def load_data(self) -> None:
+        """Load data from the pickled dictionaries."""
+        self.regions_data = self.load_dict_from_file("regions_mapping.pkl")
+        self.states_data = self.load_dict_from_file("states_mapping.pkl")
+        self.counties_data = self.load_dict_from_file("counties_mapping.pkl")
+
+    def fetch_data(self, data: dict, count: int) -> dict[Any, Any]:
+        """Fetch a subset of items from a dictionary.
 
         Args:
-            cursor (Any): Connection object
-            table (str): Table to execute query against.
-            count (int): _description_
+            data (dict): Source dictionary.
+            count (int): Maximum number of items to retrieve.
 
         Returns:
-            dict: _description_
+            dict: A subset of the dictionary.
         """
-        query = f"SELECT feature_index, landsat_FIDs FROM {table} ORDER BY feature_index LIMIT %s"
-        cursor.execute(query, (count,))
-        return {row[0]: row[1].split(",") for row in cursor.fetchall()}
+        # Since dictionaries are unordered, we'll convert the dictionary to a list of items,
+        # take the first 'count' items, and then convert it back to a dictionary.
+        return dict(list(data.items())[:count])
 
     def monte_carlo_simulation(self, num_runs: int) -> float:
         """Execute the Monte Carlo simulation for a specified number of runs using parallel threads.
@@ -93,37 +92,37 @@ class MonteCarloSimulation:
         return average_free_requests
 
     def run_simulation(self) -> int:
-        """Execute the simulation
+        """Execute the simulation.
 
         Returns:
-            int: _description_
+            int: Total count of free requests.
         """
-        with connect() as conn:
-            cursor = conn.cursor()
-            free_requests_count = 0
+        free_requests_count = 0
 
-            for _ in range(self.num):
-                scale = np.random.choice(
-                    ["regions", "states", "counties"], p=self.weights
-                )
-                if scale == "regions":
-                    data = self.regions_data
-                elif scale == "states":
-                    data = self.states_data
-                else:
-                    data = self.counties_data
-                feature_id = np.random.choice(list(data.keys()))
-                landsat_scenes = data[feature_id]
+        # Fetch subset of data
+        regions_subset = self.fetch_data(self.regions_data, self.regions_count)
+        states_subset = self.fetch_data(self.states_data, self.states_count)
+        counties_subset = self.fetch_data(self.counties_data, self.counties_count)
 
-                moved_to_hot = False
-                for scene in landsat_scenes:
-                    if self.lru.get(scene) == -1:
-                        moved_to_hot = True
-                    self.lru.put(scene)
+        for _ in range(self.num):
+            scale = np.random.choice(["regions", "states", "counties"], p=self.weights)
+            if scale == "regions":
+                data = regions_subset
+            elif scale == "states":
+                data = states_subset
+            else:
+                data = counties_subset
+            feature_id = np.random.choice(list(data.keys()))
+            landsat_scenes = data[feature_id]
 
-                # Record free requests
-                if not moved_to_hot:
-                    free_requests_count += 1
+            moved_to_hot = False
+            for scene in landsat_scenes:
+                if self.lru.get(scene) == -1:
+                    moved_to_hot = True
+                self.lru.put(scene)
 
-            cursor.close()
-            return free_requests_count
+            # Record free requests
+            if not moved_to_hot:
+                free_requests_count += 1
+
+        return free_requests_count
