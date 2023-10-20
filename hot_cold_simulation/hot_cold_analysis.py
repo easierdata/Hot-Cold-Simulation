@@ -50,7 +50,7 @@ for idx, weights in enumerate(weights_list, 1):
             preload_data=True,
         )
 
-        average_free_requests = simulator.monte_carlo_simulation(cpu_count())
+        average_free_requests = simulator.monte_carlo_simulation(cpu_count())  # type: ignore
 
         logger.info(
             f"Starting simulation {idx} of {total_weights} with {cpu_count()} runs"
