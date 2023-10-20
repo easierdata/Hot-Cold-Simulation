@@ -76,7 +76,7 @@ def append_variable(var_name: str, var_value: str, lines: list[str]) -> None:
         var_value (str): Configuration variable value
         lines (list[str]): List of lines from the configuration file.
     """
-    if var_value is not None:
+    if len(var_value) > 0:
         lines.append(f"{var_name}={var_value}\n")
     else:
         lines.append(f"{var_name}=\n")
