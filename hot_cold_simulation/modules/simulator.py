@@ -125,6 +125,7 @@ class MonteCarloSimulation:
             if moved_to_hot:
                 history.append(self.lru.current_state())
             else:
+                history.append(self.lru.current_state())
                 free_requests_count += 1
 
         return free_requests_count, history

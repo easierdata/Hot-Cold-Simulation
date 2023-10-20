@@ -57,7 +57,7 @@ free_requests, history = simulator.run_simulation()
 
 fig, ax = plt.subplots(figsize=(10, 10))
 
-logger.info("Simulation Complete")
+logger.info(f"Simulation Complete with {len(history)} entries")
 
 
 def animate(i: Any) -> List[Artist]:
