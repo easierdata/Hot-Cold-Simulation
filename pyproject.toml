@@ -6,8 +6,7 @@ authors = ["JRickey <jack.rickey99@gmail.com>"]
 repository = "https://github.com/easierdata/Hot-Cold-Simulation"
 readme = "README.md"
 packages = [
-    { include = "hot_cold_simulation" },
-    { include = "tests"},
+    { include = "hot_cold_simulation" }
 ]
 
 [tool.poetry.dependencies]
@@ -26,6 +25,10 @@ mypy = "^1.6.0"
 isort = "^5.12.0"
 pre-commit = "^3.4.0"
 ruff = "^0.0.292"
+python-dotenv = "^1.0.0"
+
+[tool.poetry.scripts]
+generate-config = "hot_cold_simulation.utils.generate_config:generate"
 
 [tool.black]
 line-length = 88

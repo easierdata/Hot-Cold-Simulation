@@ -1,14 +1,21 @@
 # type: ignore
+import os
+from pathlib import Path
 from typing import Any
 
+import dotenv
 import psycopg2
+from modules.config import CONFIG_DIR
+
+# Import database environment variables
+dotenv.load_dotenv(Path(CONFIG_DIR / "database.env"))
 
 # PostgreSQL connection parameters
-DB_NAME = "railway"
-DB_USER = "postgres"
-DB_PASS = "bfIwUUa1L3RCjGZSw3oX"
-DB_HOST = "containers-us-west-179.railway.app"
-DB_PORT = "6563"
+DB_NAME = os.getenv("DB_NAME")
+DB_USER = os.getenv("DB_USER")
+DB_PASS = os.getenv("DB_PASS")
+DB_HOST = os.getenv("DB_HOST")
+DB_PORT = os.getenv("DB_PORT")
 
 
 def connect() -> Any:
