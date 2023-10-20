@@ -12,7 +12,7 @@ from matplotlib.artist import Artist
 # Custom Imports
 from modules.config import ANIMATION_DIR, DATA_DIR  # type: ignore
 from modules.logger_config import setup_logger  # type: ignore
-from modules.quicksim import MonteCarloSimulation  # type: ignore
+from modules.simulator import MonteCarloSimulation  # type: ignore
 
 logger = setup_logger(ANIMATION_DIR)
 # Data Import
