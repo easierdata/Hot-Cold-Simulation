@@ -1,6 +1,4 @@
-import os
 import webbrowser
-from pathlib import Path
 from typing import Any, List
 
 # Third Party Imports
