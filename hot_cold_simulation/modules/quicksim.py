@@ -2,10 +2,9 @@ import concurrent.futures
 import pickle
 from multiprocessing import cpu_count
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict
 
 import numpy as np
-from modules.db_connect import connect  # type: ignore
 from modules.lru_cache import LRUCache  # type: ignore
 
 
