@@ -1,5 +1,6 @@
 import argparse
 import sys
+import textwrap
 from pathlib import Path
 from typing import Any
 
@@ -64,9 +65,7 @@ def check_for_missing_variables(
 
 
 def variable_exists(variable_name: str, lines: list[str]) -> bool:
-    x = any(line.startswith(f"{variable_name}=") for line in lines)
-    print(x)
-    return x
+    return any(line.startswith(f"{variable_name}=") for line in lines)
 
 
 def append_variable(var_name: str, var_value: str, lines: list[str]) -> None:
@@ -107,14 +106,14 @@ def update_existing_variables(variables: dict[str, Any], config_file: Path) -> N
 
 
 def write_to_file(config_file: Path, lines: list[str]) -> None:
-    """Write to a configuration file a list of key/value pairs.
+    """Write to a configuration file a list of key/value pairs. Lines are sorted alphabetically by key.
 
     Args:
         config_file (Path): Configuration file path.
         lines (list[str]): List of lines from the configuration file.
     """
     with config_file.open("w") as file:
-        file.writelines(sorted(lines))
+        file.writelines(sorted(lines, key=str.casefold))
 
 
 def generate_new_config_file(variables: dict[str, Any], config_file: Path) -> None:
@@ -134,28 +133,47 @@ def generate_new_config_file(variables: dict[str, Any], config_file: Path) -> No
                 file.write(f"{var_name}=\n")
 
 
-def main() -> None:
+def generate() -> None:
     parser = argparse.ArgumentParser(
-        description="Generate, update or reset configuration files that your project uses"
+        prog="generate-config",
+        add_help=True,
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        description=textwrap.dedent(
+            """\
+    Description: Generate .env configuration files that your project relies on.
+
+    This script contains the following features:
+        - Create directories and all necessary .env files if they do not exist.
+        - Update existing configuration files with any missing variables.
+        - Reset variables back to their default values. Reset options include all variables or just variables that are not empty.
+        - Variables are sorted alphabetically by name.
+        - Ability to modify a specific configuration.
+
+    NOTE: The reset options do not modify any non-default variables that are added to a configuration file. Only variables in the defaults.py file.
+    """
+        ),
     )
     parser.add_argument(
         "--reset",
-        dest="reset",
         action="store_true",
         help="Reset non-empty variables to their default values",
     )
     parser.add_argument(
         "--hard-reset",
-        dest="hard-reset",
         action="store_true",
         help="Reset all variables to their default values",
     )
     parser.add_argument(
         "--config-name",
-        dest="config_name",
         type=str,
         required=False,
-        help="Name of the output .env file",
+        help=textwrap.dedent(
+            f"""\
+        OPTIONAL: Pass in the name of a configuration to modify.
+
+        Configurations to select: {list(default_configurations.keys())} |  Example: --config-name=<CONFIG_NAME>
+        """,
+        ),
     )
 
     args = parser.parse_args()
@@ -183,4 +201,4 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    pass
