@@ -15,6 +15,27 @@ from modules.logger_config import setup_logger  # type: ignore
 from modules.simulator import MonteCarloSimulation  # type: ignore
 
 logger = setup_logger(ANIMATION_DIR)
+
+
+def save_animation(anim, filename_without_extension):
+    """Function to save animation in multiple formats."""
+    gif_writer = PillowWriter(fps=2)
+    anim.save(ANIMATION_DIR / f"{filename_without_extension}.gif", writer=gif_writer)
+    logger.info(f"Animation Saved as {filename_without_extension}.gif")
+
+    html_path = ANIMATION_DIR / f"{filename_without_extension}.html"
+    anim.save(html_path, writer="html")
+    logger.info(f"Animation saved as {filename_without_extension}.html")
+
+    # Save the HTML content
+    html_content = anim.to_jshtml()
+    with html_path.open("w") as file:
+        file.write(html_content)
+
+    # Open the animation in the web browser
+    webbrowser.open(f"file://{html_path.resolve()}")
+
+
 # Data Import
 usa_states_path = DATA_DIR / "USA_States" / "usa_states.shp"
 usa_states = gpd.read_file(usa_states_path)
@@ -57,15 +78,11 @@ free_requests, history = simulator.run_simulation()
 
 fig, ax = plt.subplots(figsize=(10, 10))
 
-logger.info(f"Simulation Complete with {len(history)} entries")
+logger.info("Simulation Complete")
 
 
 def animate(i: Any) -> List[Artist]:
-    """_summary_
-
-    Args:
-        i (Any): _description_
-    """
+    """Generate each animation frame."""
     ax.clear()
     hot_layer_indices = [int(idx) for idx in history[i]]
     hot_layer_gdf = usa_landsat.loc[hot_layer_indices]
@@ -88,19 +105,4 @@ def animate(i: Any) -> List[Artist]:
 
 
 anim = FuncAnimation(fig, animate, frames=len(history), repeat=False)
-
-# Save the animation
-gif_writer = PillowWriter(fps=2)
-anim.save(ANIMATION_DIR / "animation.gif", writer=gif_writer)
-logger.info("Animation Saved as gif")
-animation_file_path = Path(ANIMATION_DIR / "animation.html").as_posix()
-anim.save(animation_file_path, writer="html")
-
-# Save the HTML content
-html_content = anim.to_jshtml()
-with Path(animation_file_path).open("w") as file:
-    file.write(html_content)
-logger.info("Animation saved as HTML")
-
-# Open the animation in the web browser
-webbrowser.open("file://" + os.path.realpath(animation_file_path))
+save_animation(anim, "animation")
