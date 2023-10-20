@@ -29,6 +29,7 @@ python-dotenv = "^1.0.0"
 
 [tool.poetry.scripts]
 generate-config = "hot_cold_simulation.utils.generate_config:generate"
+run-analysis = "hot_cold_simulation.hot_cold_analysis:run_performance_analysis"
 
 [tool.black]
 line-length = 88
