@@ -46,7 +46,11 @@ simulator = MonteCarloSimulation(
     hot_layer_constraint=hot_layer_constraint,
     preload_data=True,
 )
-
+logger.info("Simulation Initialized with the following parameters\n")
+logger.info(f"Weights Array: {weights}")
+logger.info(f"Number of Requests: {num_requests}")
+logger.info(f"Hot Layer Constraint: {hot_layer_constraint}")
+logger.info("------------------------------------------\n")
 
 # Run the simulation
 free_requests, history = simulator.run_simulation()
