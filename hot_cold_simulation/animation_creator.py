@@ -11,47 +11,49 @@ from matplotlib.artist import Artist
 
 # Custom Imports
 from modules.config import ANIMATION_DIR, DATA_DIR  # type: ignore
-from modules.db_connect import connect  # type: ignore
-from modules.query_simulator import SingleSim  # type: ignore
+from modules.logger_config import setup_logger  # type: ignore
+from modules.quicksim import MonteCarloSimulation  # type: ignore
 
+logger = setup_logger()
 # Data Import
 usa_states_path = DATA_DIR / "USA_States" / "usa_states.shp"
 usa_states = gpd.read_file(usa_states_path)
 usa_states = usa_states.set_geometry("geometry")
 
-usa_counties_path = DATA_DIR / "USA_Counties" / "usa_counties.shp"
-usa_counties = gpd.read_file(usa_counties_path)
-usa_counties = usa_counties.set_geometry("geometry")
-
-usa_regions_path = DATA_DIR / "USA_Regions" / "usa_regions.shp"
-usa_regions = gpd.read_file(usa_regions_path)
-usa_regions = usa_regions.set_geometry("geometry")
-
 usa_landsat_path = DATA_DIR / "USA_Landsat" / "usa_landsat.shp"
 usa_landsat = gpd.read_file(usa_landsat_path)
 usa_landsat = usa_landsat.set_geometry("geometry")
+logger.info("Data Loaded")
 
+# hardcoded to avoid unnecessary database query, do not change
+regions_count = 6
+states_count = 49
+counties_count = 4437
+
+# Set your desired parameters here
+step_size = 0.025
+num_requests = 100
+hot_layer_constraint = 250
+weights = [0.02, 0.4, 0.58]
 
 # Create an instance of the simulator
-conn = connect()
-simulator = SingleSim(
-    regions=usa_regions,
-    states=usa_states,
-    counties=usa_counties,
-    conn=conn,
-    num=100,  # number of queries
-    weights=[0.01, 0.24, 0.75],  # weights for region, state, and county respectively
-    hot_layer_constraint=250,  # maximum number of landsat scenes in the hot layer
-    debug_mode=True,
+simulator = MonteCarloSimulation(
+    regions_count=regions_count,
+    states_count=states_count,
+    counties_count=counties_count,
+    num=num_requests,
+    weights=weights,
+    hot_layer_constraint=hot_layer_constraint,
+    preload_data=True,
 )
 
+
 # Run the simulation
-history, free_requests = simulator.run_simulation()
-conn.close()
+free_requests, history = simulator.run_simulation()
 
 fig, ax = plt.subplots(figsize=(10, 10))
 
-minx, miny, maxx, maxy = usa_states.total_bounds
+logger.info("Simulation Complete")
 
 
 def animate(i: Any) -> List[Artist]:
@@ -61,7 +63,6 @@ def animate(i: Any) -> List[Artist]:
         i (Any): _description_
     """
     ax.clear()
-
     hot_layer_indices = [int(idx) for idx in history[i]]
     hot_layer_gdf = usa_landsat.loc[hot_layer_indices]
     hot_layer_gdf.set_crs(usa_landsat.crs)
@@ -77,6 +78,7 @@ def animate(i: Any) -> List[Artist]:
     # Ensuring the aspect ratio remains equal
     ax.set_aspect("equal", adjustable="box")
 
+    logger.info(f"Frame {i} Generated")
     # Return a list of Artist objects
     return [usa_states_plot, hot_layer_plot, title_text]
 
@@ -86,7 +88,7 @@ anim = FuncAnimation(fig, animate, frames=len(history), repeat=False)
 # Save the animation
 gif_writer = PillowWriter(fps=2)
 anim.save(ANIMATION_DIR / "animation.gif", writer=gif_writer)
-
+logger.info("Animation Saved as gif")
 animation_file_path = Path(ANIMATION_DIR / "animation.html").as_posix()
 anim.save(animation_file_path, writer="html")
 
@@ -94,6 +96,7 @@ anim.save(animation_file_path, writer="html")
 html_content = anim.to_jshtml()
 with Path(animation_file_path).open("w") as file:
     file.write(html_content)
+logger.info("Animation saved as HTML")
 
 # Open the animation in the web browser
 webbrowser.open("file://" + os.path.realpath(animation_file_path))

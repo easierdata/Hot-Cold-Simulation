@@ -1,10 +1,8 @@
 import logging
 from typing import Optional
 
-from modules.config import MONTE_CARLO_LOG_DIR  # type: ignore
 
-
-def setup_logger(logger_name: Optional[str] = "logger") -> logging.Logger:
+def setup_logger(dir, logger_name: Optional[str] = "logger") -> logging.Logger:
     """_summary_
 
     Args:
@@ -23,7 +21,7 @@ def setup_logger(logger_name: Optional[str] = "logger") -> logging.Logger:
     stream_handler = logging.StreamHandler()
     stream_handler.setFormatter(formatter)
 
-    file_handler = logging.FileHandler((MONTE_CARLO_LOG_DIR / "results.log").as_posix())
+    file_handler = logging.FileHandler((dir / "results.log").as_posix())
     file_handler.setFormatter(formatter)
 
     for handler in logger.handlers[:]:

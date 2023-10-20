@@ -2,7 +2,7 @@ import concurrent.futures
 import pickle
 from multiprocessing import cpu_count
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, List, Tuple
 
 import numpy as np
 from modules.lru_cache import LRUCache  # type: ignore
@@ -82,21 +82,22 @@ class MonteCarloSimulation:
 
             results = []
             for _i, f in enumerate(concurrent.futures.as_completed(futures), 1):
-                result = f.result()
-                results.append(result)
+                free_requests, _ = f.result()  # Extract only the free_requests_count
+                results.append(free_requests)
 
-        total_free_requests = sum(free_requests for free_requests in results)
+        total_free_requests = sum(results)
         average_free_requests = total_free_requests / num_runs
 
         return average_free_requests
 
-    def run_simulation(self) -> int:
+    def run_simulation(self) -> Tuple[int, List[Any]]:
         """Execute the simulation.
 
         Returns:
-            int: Total count of free requests.
+            Tuple[int, List[Any]]: Tuple containing total count of free requests and history.
         """
         free_requests_count = 0
+        history: List[Any] = []
 
         # Fetch subset of data
         regions_subset = self.fetch_data(self.regions_data, self.regions_count)
@@ -120,8 +121,10 @@ class MonteCarloSimulation:
                     moved_to_hot = True
                 self.lru.put(scene)
 
-            # Record free requests
-            if not moved_to_hot:
+            # Record free requests and history
+            if moved_to_hot:
+                history.append(self.lru.current_state())
+            else:
                 free_requests_count += 1
 
-        return free_requests_count
+        return free_requests_count, history
