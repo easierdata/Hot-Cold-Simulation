@@ -162,5 +162,6 @@ cython_debug/
 #.idea/
 
 # Project Specific
-/data
+/data/USA_Counties
+/data/USA_Regions
 /config
