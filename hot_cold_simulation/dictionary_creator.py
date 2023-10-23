@@ -36,7 +36,7 @@ def create_mapping_dictionary(
         intersecting_landsat = landsat_gdf[
             landsat_gdf.geometry.intersects(row.geometry)
         ]
-        landsat_indices = intersecting_landsat.index.to_list()
+        landsat_indices = intersecting_landsat.index.to_list()  # type: ignore
         mapping_dict[idx] = landsat_indices
 
     return mapping_dict
