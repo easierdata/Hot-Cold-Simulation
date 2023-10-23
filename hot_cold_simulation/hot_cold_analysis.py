@@ -16,16 +16,12 @@ from modules.logger_config import setup_logger  # type: ignore
 # Custom imports
 from modules.simulator import MonteCarloSimulation  # type: ignore
 
+current_dir = Path.cwd()
+monte_carlo_results_dir = (Path(current_dir) / MONTE_CARLO_LOG_DIR).resolve()  # type: ignore
 logger = setup_logger(MONTE_CARLO_LOG_DIR)
 
 
-def run_performance_analysis() -> None:
-    """
-    This function runs the performance analysis for the Monte Carlo Simulation.
-    """
-
-    # Set your desired parameters here
-    # Load environment variables
+def load_environment_variables():
     dotenv.load_dotenv(Path(CONFIG_DIR / "MonteCarlo-Properties.env"))
     step_size = float(getenv("step_size"))  # type: ignore
     num_requests = int(getenv("num_requests"))  # type: ignore
@@ -40,6 +36,43 @@ def run_performance_analysis() -> None:
     logger.info(f"Hot Layer Constraint: {hot_layer_constraint}")
     logger.info("------------------------------------------\n")
 
+    return (
+        num_requests,
+        hot_layer_constraint,
+        weights_list,
+        total_weights,
+        init_time,
+    )
+
+
+def order_results(simulator_results):
+    x, y, z, values = [], [], [], []
+    for weight, avg_free in simulator_results.items():
+        x.append(weight[0])
+        y.append(weight[1])
+        z.append(weight[2])
+        values.append(avg_free)
+
+    return x, y, z, values
+
+
+def calculate_results(simulator_results):
+    (
+        x,
+        y,
+        z,
+        values,
+    ) = order_results(simulator_results)
+    # Find the index of the maximum average free requests
+    max_index = np.argmax(values)
+
+    # Retrieve the corresponding weight combination
+    optimal_weights = (x[max_index], y[max_index], z[max_index])
+    max_free_requests = values[max_index]
+    return optimal_weights, max_free_requests
+
+
+def run_simulation(num_requests, weights_list, hot_layer_constraint, total_weights):
     simulator_results = {}
     for idx, weights in enumerate(weights_list, 1):
         start_time = time.time()
@@ -63,27 +96,16 @@ def run_performance_analysis() -> None:
         logger.info("------------------------------------------\n")
 
         simulator_results[tuple(weights)] = average_free_requests
+    return simulator_results
 
-    """ Calculating Results """
-    x, y, z, values = [], [], [], []
-    for weight, avg_free in simulator_results.items():
-        x.append(weight[0])
-        y.append(weight[1])
-        z.append(weight[2])
-        values.append(avg_free)
 
-    # Find the index of the maximum average free requests
-    max_index = np.argmax(values)
-
-    # Retrieve the corresponding weight combination
-    optimal_weights = (x[max_index], y[max_index], z[max_index])
-    max_free_requests = values[max_index]
-
-    logger.info(f"Analysis completed in {(time.time() - init_time):.2f} seconds")
-    logger.info(f"Optimal weights (Region, State, County): {optimal_weights}")
-    logger.info(f"Maximum average free requests: {max_free_requests}")
-
-    """ Plotting Results """
+def plot_results(simulator_results):
+    (
+        x,
+        y,
+        z,
+        values,
+    ) = order_results(simulator_results)
     fig = go.Figure(
         data=[
             go.Scatter3d(
@@ -115,22 +137,51 @@ def run_performance_analysis() -> None:
         margin={"r": 20, "b": 10, "l": 10, "t": 10},
     )
 
+    # Save plot to disk
+    plot_file_path = Path(monte_carlo_results_dir / "plot.html")
+    fig.write_html(plot_file_path)
     # Display the plot
     fig.show()
 
-    """  Saving Results """
-    current_dir = Path.cwd()
-    monte_carlo_results_dir = (Path(current_dir) / MONTE_CARLO_LOG_DIR).resolve()  # type: ignore
 
+def save_results(simulator_results):
     df = pd.DataFrame(
         list(simulator_results.items()), columns=["Weights", "Average Free Requests"]
     )
     results_csv_path = Path(monte_carlo_results_dir / "results.csv")
     df.to_csv(results_csv_path, index=False)
 
-    """ Saving Plot """
-    plot_file_path = Path(monte_carlo_results_dir / "plot.html")
-    fig.write_html(plot_file_path)
+
+def run_performance_analysis() -> None:
+    """
+    This function runs the performance analysis for the Monte Carlo Simulation.
+    """
+    (
+        num_requests,
+        hot_layer_constraint,
+        weights_list,
+        total_weights,
+        init_time,
+    ) = load_environment_variables()
+
+    simulator_results = run_simulation(
+        num_requests,
+        weights_list,
+        hot_layer_constraint,
+        total_weights,
+    )
+
+    (
+        optimal_weights,
+        max_free_requests,
+    ) = calculate_results(simulator_results)
+
+    logger.info(f"Analysis completed in {(time.time() - init_time):.2f} seconds")
+    logger.info(f"Optimal weights (Region, State, County): {optimal_weights}")
+    logger.info(f"Maximum average free requests: {max_free_requests}")
+
+    plot_results(simulator_results)
+    save_results(simulator_results)
 
 
 if __name__ == "__main__":
