@@ -21,6 +21,38 @@ monte_carlo_results_dir = (Path(current_dir) / MONTE_CARLO_LOG_DIR).resolve()  #
 logger = setup_logger(MONTE_CARLO_LOG_DIR)
 
 
+def run_analysis() -> None:
+    """
+    This function runs the analysis for the Monte Carlo Simulation.
+    """
+    (
+        num_requests,
+        hot_layer_constraint,
+        weights_list,
+        total_weights,
+        init_time,
+    ) = load_environment_variables()
+
+    simulator_results = run_simulation(
+        num_requests,
+        weights_list,
+        hot_layer_constraint,
+        total_weights,
+    )
+
+    (
+        optimal_weights,
+        max_free_requests,
+    ) = calculate_results(simulator_results)
+
+    logger.info(f"Analysis completed in {(time.time() - init_time):.2f} seconds")
+    logger.info(f"Optimal weights (Region, State, County): {optimal_weights}")
+    logger.info(f"Maximum average free requests: {max_free_requests}")
+
+    plot_results(simulator_results)
+    save_results(simulator_results)
+
+
 def load_environment_variables():
     dotenv.load_dotenv(Path(CONFIG_DIR / "MonteCarlo-Properties.env"))
     step_size = float(getenv("step_size"))  # type: ignore
@@ -152,37 +184,5 @@ def save_results(simulator_results):
     df.to_csv(results_csv_path, index=False)
 
 
-def run_performance_analysis() -> None:
-    """
-    This function runs the performance analysis for the Monte Carlo Simulation.
-    """
-    (
-        num_requests,
-        hot_layer_constraint,
-        weights_list,
-        total_weights,
-        init_time,
-    ) = load_environment_variables()
-
-    simulator_results = run_simulation(
-        num_requests,
-        weights_list,
-        hot_layer_constraint,
-        total_weights,
-    )
-
-    (
-        optimal_weights,
-        max_free_requests,
-    ) = calculate_results(simulator_results)
-
-    logger.info(f"Analysis completed in {(time.time() - init_time):.2f} seconds")
-    logger.info(f"Optimal weights (Region, State, County): {optimal_weights}")
-    logger.info(f"Maximum average free requests: {max_free_requests}")
-
-    plot_results(simulator_results)
-    save_results(simulator_results)
-
-
 if __name__ == "__main__":
-    run_performance_analysis()
+    run_analysis()
