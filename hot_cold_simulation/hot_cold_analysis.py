@@ -23,10 +23,6 @@ def run_performance_analysis() -> None:
     """
     This function runs the performance analysis for the Monte Carlo Simulation.
     """
-    # hardcoded to avoid unnecessary database query, do not change
-    regions_count = 6
-    states_count = 49
-    counties_count = 4437
 
     # Set your desired parameters here
     # Load environment variables
@@ -49,9 +45,6 @@ def run_performance_analysis() -> None:
         start_time = time.time()
         # if __name__ == "__main__":
         simulator = MonteCarloSimulation(
-            regions_count=regions_count,
-            states_count=states_count,
-            counties_count=counties_count,
             num=num_requests,
             weights=weights,
             hot_layer_constraint=hot_layer_constraint,

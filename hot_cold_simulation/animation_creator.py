@@ -44,11 +44,6 @@ usa_landsat = gpd.read_file(usa_landsat_path)
 usa_landsat = usa_landsat.set_geometry("geometry")
 logger.info("Data Loaded")
 
-# hardcoded to avoid unnecessary database query, do not change
-regions_count = 6
-states_count = 49
-counties_count = 4437
-
 # Set your desired parameters here
 step_size = 0.025
 num_requests = 100
@@ -57,9 +52,6 @@ weights = [0.02, 0.4, 0.58]
 
 # Create an instance of the simulator
 simulator = MonteCarloSimulation(
-    regions_count=regions_count,
-    states_count=states_count,
-    counties_count=counties_count,
     num=num_requests,
     weights=weights,
     hot_layer_constraint=hot_layer_constraint,

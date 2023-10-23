@@ -11,9 +11,6 @@ from modules.lru_cache import LRUCache  # type: ignore
 class MonteCarloSimulation:
     def __init__(
         self,
-        regions_count: int,
-        states_count: int,
-        counties_count: int,
         weights: list[float],
         num: int,
         hot_layer_constraint: int,
@@ -22,17 +19,11 @@ class MonteCarloSimulation:
         """_summary_
 
         Args:
-            regions_count (int): _description_
-            states_count (int): _description_
-            counties_count (int): _description_
             weights (list[Any]): _description_
             num (int): _description_
             hot_layer_constraint (_type_): _description_
             preload_data (bool, optional): _description_. Defaults to False.
         """
-        self.regions_count = regions_count
-        self.states_count = states_count
-        self.counties_count = counties_count
         self.weights = weights
         self.num = num
         self.lru = LRUCache(hot_layer_constraint)
@@ -100,9 +91,9 @@ class MonteCarloSimulation:
         history: List[Any] = []
 
         # Fetch subset of data
-        regions_subset = self.fetch_data(self.regions_data, self.regions_count)
-        states_subset = self.fetch_data(self.states_data, self.states_count)
-        counties_subset = self.fetch_data(self.counties_data, self.counties_count)
+        regions_subset = self.fetch_data(self.regions_data, 6)
+        states_subset = self.fetch_data(self.states_data, 49)
+        counties_subset = self.fetch_data(self.counties_data, 4437)
 
         for _ in range(self.num):
             scale = np.random.choice(["regions", "states", "counties"], p=self.weights)
