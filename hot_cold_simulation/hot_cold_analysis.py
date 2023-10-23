@@ -27,52 +27,44 @@ def run_analysis() -> None:
     """
     (
         num_requests,
-        hot_layer_constraint,
         weights_list,
-        total_weights,
+        constraint_list,
+        total_constraints,
         init_time,
     ) = load_environment_variables()
 
     simulator_results = run_simulation(
         num_requests,
         weights_list,
-        hot_layer_constraint,
-        total_weights,
+        constraint_list,
+        total_constraints,
     )
 
-    (
-        optimal_weights,
-        max_free_requests,
-    ) = calculate_results(simulator_results)
-
     logger.info(f"Analysis completed in {(time.time() - init_time):.2f} seconds")
-    logger.info(f"Optimal weights (Region, State, County): {optimal_weights}")
-    logger.info(f"Maximum average free requests: {max_free_requests}")
-
-    plot_results(simulator_results)
-    save_results(simulator_results)
+    plot_bar_chart(simulator_results)
 
 
 def load_environment_variables():
     dotenv.load_dotenv(Path(CONFIG_DIR / "MonteCarlo-Properties.env"))
     step_size = float(getenv("step_size"))  # type: ignore
     num_requests = int(getenv("num_requests"))  # type: ignore
-    hot_layer_constraint = int(getenv("hot_layer_constraint"))  # type: ignore
+    hot_layer_increment = int(getenv("hot_layer_increment"))  # type: ignore
     weights_list = list(linear_combinations(step_size))
-    total_weights = len(weights_list)
+    constraint_list = list(range(hot_layer_increment, 800, hot_layer_increment))
+    total_constraints = len(constraint_list)
     init_time = time.time()
 
     logger.info("Analysis Initialized with the following parameters\n")
     logger.info(f"Feature Scale Weights Step Size: {step_size}")
     logger.info(f"Number of Requests per Simulation: {num_requests}")
-    logger.info(f"Hot Layer Constraint: {hot_layer_constraint}")
+    logger.info(f"Hot Layer Increment: {hot_layer_increment}")
     logger.info("------------------------------------------\n")
 
     return (
         num_requests,
-        hot_layer_constraint,
         weights_list,
-        total_weights,
+        constraint_list,
+        total_constraints,
         init_time,
     )
 
@@ -104,34 +96,78 @@ def calculate_results(simulator_results):
     return optimal_weights, max_free_requests
 
 
-def run_simulation(num_requests, weights_list, hot_layer_constraint, total_weights):
+def run_simulation(num_requests, weights_list, constraint_list, total_constraints):
     simulator_results = {}
-    for idx, weights in enumerate(weights_list, 1):
+    for idx, constraint in enumerate(constraint_list, start=1):
         start_time = time.time()
-        # if __name__ == "__main__":
-        simulator = MonteCarloSimulation(
-            num=num_requests,
-            weights=weights,
-            hot_layer_constraint=hot_layer_constraint,
-            preload_data=True,
-        )
+        weight_results = {}
+        logger.info(f"Starting constraint analysis {idx} of {total_constraints}")
+        for ijx, weights in enumerate(weights_list, start=1):
+            wstart_time = time.time()
+            # if __name__ == "__main__":
+            simulator = MonteCarloSimulation(
+                num=num_requests,
+                weights=weights,
+                hot_layer_constraint=constraint,
+                preload_data=True,
+            )
+            average_free_requests = simulator.monte_carlo_simulation(cpu_count())  # type: ignore
+            weight_results[tuple(weights)] = average_free_requests
 
-        average_free_requests = simulator.monte_carlo_simulation(cpu_count())  # type: ignore
+            logger.info(
+                f"      Weight Analysis {ijx} completed in {(time.time() - wstart_time):.2f} seconds"
+            )
 
+        optimal_weights, max_free_requests = calculate_results(weight_results)
         logger.info(
-            f"Starting simulation {idx} of {total_weights} with {cpu_count()} runs"
+            f"Constraint simulation {idx} completed in {(time.time() - start_time):.2f} seconds"
         )
-        logger.info(
-            f"Simulation {idx} completed in {(time.time() - start_time):.2f} seconds"
-        )
-        logger.info(f"Average free requests: {average_free_requests}")
+        logger.info(f"Optimal weights are: {optimal_weights}")
+        logger.info(f"Maximum free requests are: {max_free_requests}")
         logger.info("------------------------------------------\n")
+        simulator_results[constraint] = [optimal_weights, max_free_requests]
 
-        simulator_results[tuple(weights)] = average_free_requests
     return simulator_results
 
 
-def plot_results(simulator_results):
+def plot_bar_chart(simulator_results):
+    # Extract constraints, weights, and max free requests from results
+    constraints = list(simulator_results.keys())
+    optimal_weights_list = [result[0] for result in simulator_results.values()]
+    max_free_requests_list = [result[1] for result in simulator_results.values()]
+
+    # Create traces for each weight in optimal_weights
+    traces = []
+    for i in range(3):
+        traces.append(  # noqa: PERF401
+            go.Bar(
+                x=constraints,
+                y=[
+                    weights[i] * max_free
+                    for weights, max_free in zip(
+                        optimal_weights_list, max_free_requests_list
+                    )
+                ],
+                name=f"Weight {i+1}",
+            )
+        )
+
+    # Plot the bar chart
+    layout = go.Layout(
+        title="Max Free Requests by Constraint",
+        barmode="stack",
+        xaxis_title="Constraints",
+        yaxis_title="Max Free Requests",
+    )
+
+    fig = go.Figure(data=traces, layout=layout)
+    # Save plot to disk
+    plot_file_path = Path(monte_carlo_results_dir / "bar.html")
+    fig.write_html(plot_file_path)
+    fig.show()
+
+
+def plot_weight_results(simulator_results):
     (
         x,
         y,
@@ -176,7 +212,7 @@ def plot_results(simulator_results):
     fig.show()
 
 
-def save_results(simulator_results):
+def save_weight_results(simulator_results):
     df = pd.DataFrame(
         list(simulator_results.items()), columns=["Weights", "Average Free Requests"]
     )
