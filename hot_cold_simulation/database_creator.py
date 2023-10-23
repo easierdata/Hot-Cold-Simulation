@@ -53,7 +53,7 @@ def populate_table_with_list_mappings_using_index(
         intersecting_landsat = landsat_gdf[
             landsat_gdf.geometry.intersects(row.geometry)
         ]
-        landsat_indices = intersecting_landsat.index.to_list()
+        landsat_indices = intersecting_landsat.index.to_list()  # type: ignore
         landsat_indices_str = ",".join(map(str, landsat_indices))
         mappings.append((idx, landsat_indices_str))
 
