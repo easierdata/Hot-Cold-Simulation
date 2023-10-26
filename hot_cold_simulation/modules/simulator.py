@@ -6,6 +6,7 @@ from typing import Any, Dict, List, Tuple
 
 import numpy as np
 from modules.lru_cache import LRUCache  # type: ignore
+from modules.time_cache import TimeCache
 
 
 class MonteCarloSimulation:
@@ -13,7 +14,8 @@ class MonteCarloSimulation:
         self,
         weights: list[float],
         num: int,
-        hot_layer_constraint: int,
+        cache_type,
+        param,
         preload_data: bool = False,
     ) -> None:
         """_summary_
@@ -26,7 +28,12 @@ class MonteCarloSimulation:
         """
         self.weights = weights
         self.num = num
-        self.lru = LRUCache(hot_layer_constraint)
+        if cache_type == "LRUCache":
+            self.cache = LRUCache(param)
+        elif cache_type == "TimeCache":
+            self.cache = TimeCache(param)
+        else:
+            raise ValueError("Invalid cache type. Use 'LRUCache' or 'TimeCache'.")
         if preload_data:
             self.load_data()
 
@@ -108,15 +115,15 @@ class MonteCarloSimulation:
 
             moved_to_hot = False
             for scene in landsat_scenes:
-                if self.lru.get(scene) == -1:
+                if self.cache.get(scene) == -1:
                     moved_to_hot = True
-                self.lru.put(scene)
+                self.cache.put(scene)
 
             # Record free requests and history
             if moved_to_hot:
-                history.append(self.lru.current_state())
+                history.append(self.cache.current_state())
             else:
-                history.append(self.lru.current_state())
+                history.append(self.cache.current_state())
                 free_requests_count += 1
 
         return free_requests_count, history

@@ -68,15 +68,15 @@ def variable_exists(variable_name: str, lines: list[str]) -> bool:
     return any(line.startswith(f"{variable_name}=") for line in lines)
 
 
-def append_variable(var_name: str, var_value: str, lines: list[str]) -> None:
+def append_variable(var_name: str, var_value: Any, lines: list[str]) -> None:
     """Append a single key/value pair to a list of variables.
 
     Args:
         var_name (str): Configuration variable name
-        var_value (str): Configuration variable value
+        var_value (Any): Configuration variable value
         lines (list[str]): List of lines from the configuration file.
     """
-    if len(var_value) > 0:
+    if var_value is not None and str(var_value):  # Updated this line
         lines.append(f"{var_name}={var_value}\n")
     else:
         lines.append(f"{var_name}=\n")

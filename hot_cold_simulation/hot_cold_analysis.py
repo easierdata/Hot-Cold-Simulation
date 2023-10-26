@@ -28,16 +28,18 @@ def run_analysis() -> None:
     (
         num_requests,
         weights_list,
-        constraint_list,
-        total_constraints,
+        cache_type,
+        param_list,
+        total_params,
         init_time,
     ) = load_environment_variables()
 
     simulator_results = run_simulation(
         num_requests,
         weights_list,
-        constraint_list,
-        total_constraints,
+        cache_type,
+        param_list,
+        total_params,
     )
 
     logger.info(f"Analysis completed in {(time.time() - init_time):.2f} seconds")
@@ -48,23 +50,33 @@ def load_environment_variables():
     dotenv.load_dotenv(Path(CONFIG_DIR / "MonteCarlo-Properties.env"))
     step_size = float(getenv("step_size"))  # type: ignore
     num_requests = int(getenv("num_requests"))  # type: ignore
-    hot_layer_increment = int(getenv("hot_layer_increment"))  # type: ignore
+    cache_type = str(getenv("cache_type"))  # type: ignore
+    cache_param_increment = int(getenv("cache_param_increment"))  # type: ignore
+
     weights_list = list(linear_combinations(step_size))
-    constraint_list = list(range(hot_layer_increment, 800, hot_layer_increment))
-    total_constraints = len(constraint_list)
     init_time = time.time()
 
+    if cache_type == "LRUCache":
+        param_list = list(range(cache_param_increment, 800, cache_param_increment))
+    elif cache_type == "TimeCache":
+        param_list = list(range(50, 800, cache_param_increment))
+    else:
+        raise ValueError("Invalid cache type. Use 'LRUCache' or 'TimeCache'.")
+
+    total_params = len(param_list)
     logger.info("Analysis Initialized with the following parameters\n")
+    logger.info(f"Cache type {cache_type}")
     logger.info(f"Feature Scale Weights Step Size: {step_size}")
     logger.info(f"Number of Requests per Simulation: {num_requests}")
-    logger.info(f"Hot Layer Increment: {hot_layer_increment}")
+    logger.info(f"Parameter list {param_list}")
     logger.info("------------------------------------------\n")
 
     return (
         num_requests,
         weights_list,
-        constraint_list,
-        total_constraints,
+        cache_type,
+        param_list,
+        total_params,
         init_time,
     )
 
@@ -96,19 +108,20 @@ def calculate_results(simulator_results):
     return optimal_weights, max_free_requests
 
 
-def run_simulation(num_requests, weights_list, constraint_list, total_constraints):
+def run_simulation(num_requests, weights_list, cache_type, param_list, total_params):
     simulator_results = {}
-    for idx, constraint in enumerate(constraint_list, start=1):
+    for idx, param in enumerate(param_list, start=1):
         start_time = time.time()
         weight_results = {}
-        logger.info(f"Starting constraint analysis {idx} of {total_constraints}")
+        logger.info(f"Starting constraint analysis {idx} of {total_params}")
         for ijx, weights in enumerate(weights_list, start=1):
             wstart_time = time.time()
             # if __name__ == "__main__":
             simulator = MonteCarloSimulation(
                 num=num_requests,
                 weights=weights,
-                hot_layer_constraint=constraint,
+                cache_type=cache_type,
+                param=param,
                 preload_data=True,
             )
             average_free_requests = simulator.monte_carlo_simulation(cpu_count())  # type: ignore
@@ -125,7 +138,7 @@ def run_simulation(num_requests, weights_list, constraint_list, total_constraint
         logger.info(f"Optimal weights are: {optimal_weights}")
         logger.info(f"Maximum free requests are: {max_free_requests}")
         logger.info("------------------------------------------\n")
-        simulator_results[constraint] = [optimal_weights, max_free_requests]
+        simulator_results[param] = [optimal_weights, max_free_requests]
 
     return simulator_results
 
