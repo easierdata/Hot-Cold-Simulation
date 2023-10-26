@@ -94,7 +94,7 @@ class MonteCarloSimulation:
         Returns:
             Tuple[int, List[Any]]: Tuple containing total count of free requests and history.
         """
-        free_requests_count = 0
+        free_scenes = 0
         history: List[Any] = []
 
         # Fetch subset of data
@@ -113,17 +113,11 @@ class MonteCarloSimulation:
             feature_id = np.random.choice(list(data.keys()))
             landsat_scenes = data[feature_id]
 
-            moved_to_hot = False
             for scene in landsat_scenes:
-                if self.cache.get(scene) == -1:
-                    moved_to_hot = True
-                self.cache.put(scene)
+                if self.cache.get(scene) != -1:
+                    free_scenes += 1
 
-            # Record free requests and history
-            if moved_to_hot:
-                history.append(self.cache.current_state())
-            else:
-                history.append(self.cache.current_state())
-                free_requests_count += 1
+            self.cache.put(landsat_scenes)
 
-        return free_requests_count, history
+            history.append(self.cache.current_state())
+        return free_scenes, history
