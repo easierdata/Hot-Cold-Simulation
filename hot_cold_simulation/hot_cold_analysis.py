@@ -32,6 +32,7 @@ def run_analysis() -> None:
         param_list,
         total_params,
         init_time,
+        prepopulate_cache,
     ) = load_environment_variables()
 
     simulator_results = run_simulation(
@@ -40,6 +41,7 @@ def run_analysis() -> None:
         cache_type,
         param_list,
         total_params,
+        prepopulate_cache,
     )
 
     logger.info(f"Analysis completed in {(time.time() - init_time):.2f} seconds")
@@ -52,6 +54,7 @@ def load_environment_variables():
     num_requests = int(getenv("num_requests"))  # type: ignore
     cache_type = str(getenv("cache_type"))  # type: ignore
     cache_param_increment = int(getenv("cache_param_increment"))  # type: ignore
+    prepopulate_cache = bool(getenv("prepopulate_cache"))  # type: ignore
 
     weights_list = list(linear_combinations(step_size))
     init_time = time.time()
@@ -78,6 +81,7 @@ def load_environment_variables():
         param_list,
         total_params,
         init_time,
+        prepopulate_cache,
     )
 
 
@@ -108,7 +112,9 @@ def calculate_results(simulator_results):
     return optimal_weights, max_free_requests
 
 
-def run_simulation(num_requests, weights_list, cache_type, param_list, total_params):
+def run_simulation(
+    num_requests, weights_list, cache_type, param_list, total_params, prepopulate_cache
+):
     simulator_results = {}
     for idx, param in enumerate(param_list, start=1):
         start_time = time.time()
@@ -122,7 +128,7 @@ def run_simulation(num_requests, weights_list, cache_type, param_list, total_par
                 weights=weights,
                 cache_type=cache_type,
                 param=param,
-                preload_data=True,
+                prepopulate_cache=prepopulate_cache,
             )
             average_free_requests = simulator.monte_carlo_simulation(cpu_count())  # type: ignore
             weight_results[tuple(weights)] = average_free_requests

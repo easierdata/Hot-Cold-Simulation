@@ -16,7 +16,7 @@ class MonteCarloSimulation:
         num: int,
         cache_type,
         param,
-        preload_data: bool = False,
+        prepopulate_cache: bool = False,
     ) -> None:
         """_summary_
 
@@ -29,7 +29,7 @@ class MonteCarloSimulation:
         self.weights = weights
         self.num = num
         if cache_type == "LRUCache":
-            self.cache = LRUCache(param)
+            self.cache = LRUCache(param, prepopulate_cache)
         elif cache_type == "TimeCache":
             self.cache = TimeCache(param)
         else:
