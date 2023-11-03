@@ -14,5 +14,6 @@ default_configurations = {
         "cache_type": "LRUCache",
         "cache_param_increment": 10,
         "prepopulate_cache": True,
+        "num_runs": 32,
     },
 }
