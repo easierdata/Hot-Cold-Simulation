@@ -1,6 +1,6 @@
 # Standard library imports
 import time
-from os import cpu_count, getenv
+from os import getenv
 from pathlib import Path
 
 import dotenv
