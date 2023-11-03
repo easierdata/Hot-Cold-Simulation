@@ -94,6 +94,7 @@ class MonteCarloSimulation:
             Tuple[int, List[Any]]: Tuple containing total count of free requests and history.
         """
         free_scenes = 0
+        total_scenes = 0
         history: List[Any] = []
 
         # Fetch subset of data
@@ -113,10 +114,12 @@ class MonteCarloSimulation:
             landsat_scenes = data[feature_id]
 
             for scene in landsat_scenes:
+                total_scenes += 1
                 if self.cache.get(scene) != -1:
                     free_scenes += 1
 
             self.cache.put(landsat_scenes)
-
             history.append(self.cache.current_state())
-        return free_scenes, history
+
+        free_ratio = free_scenes / total_scenes if total_scenes > 0 else 0
+        return free_ratio, history  # type: ignore

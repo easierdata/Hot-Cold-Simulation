@@ -1,7 +1,7 @@
 # type: ignore
+import random
 from collections import OrderedDict
 from typing import Any, List
-import random
 
 
 class LRUCache:
