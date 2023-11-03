@@ -34,8 +34,7 @@ class MonteCarloSimulation:
             self.cache = TimeCache(param)
         else:
             raise ValueError("Invalid cache type. Use 'LRUCache' or 'TimeCache'.")
-        if preload_data:
-            self.load_data()
+        self.load_data()
 
     def load_dict_from_file(self, filename: str) -> Dict:
         current_dir = Path.cwd()

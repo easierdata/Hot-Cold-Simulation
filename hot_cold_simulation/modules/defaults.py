@@ -13,5 +13,6 @@ default_configurations = {
         "num_requests": 100,
         "cache_type": "LRUCache",
         "cache_param_increment": 10,
+        "prepopulate_cache": True,
     },
 }
