@@ -45,22 +45,24 @@ usa_landsat = usa_landsat.set_geometry("geometry")
 logger.info("Data Loaded")
 
 # Set your desired parameters here
-step_size = 0.025
 num_requests = 100
-hot_layer_constraint = 250
+cache_type = "TimeCache"
+param = 250
 weights = [0.02, 0.4, 0.58]
 
 # Create an instance of the simulator
 simulator = MonteCarloSimulation(
     num=num_requests,
     weights=weights,
-    hot_layer_constraint=hot_layer_constraint,
+    cache_type=cache_type,
+    param=param,
     preload_data=True,
 )
 logger.info("Simulation Initialized with the following parameters\n")
+logger.info(f"Cache Type: {cache_type}")
 logger.info(f"Weights Array: {weights}")
 logger.info(f"Number of Requests: {num_requests}")
-logger.info(f"Hot Layer Constraint: {hot_layer_constraint}")
+logger.info(f"Cache Parameter: {param}")
 logger.info("------------------------------------------\n")
 
 # Run the simulation

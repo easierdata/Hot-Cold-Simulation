@@ -11,6 +11,9 @@ default_configurations = {
     "MonteCarlo-Properties": {
         "step_size": 0.025,
         "num_requests": 100,
-        "hot_layer_constraint": 250,
+        "cache_type": "LRUCache",
+        "cache_param_increment": 10,
+        "prepopulate_cache": True,
+        "num_runs": 32,
     },
 }

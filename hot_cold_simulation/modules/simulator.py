@@ -6,6 +6,7 @@ from typing import Any, Dict, List, Tuple
 
 import numpy as np
 from modules.lru_cache import LRUCache  # type: ignore
+from modules.time_cache import TimeCache
 
 
 class MonteCarloSimulation:
@@ -13,8 +14,9 @@ class MonteCarloSimulation:
         self,
         weights: list[float],
         num: int,
-        hot_layer_constraint: int,
-        preload_data: bool = False,
+        cache_type,
+        param,
+        prepopulate_cache: bool = False,
     ) -> None:
         """_summary_
 
@@ -26,9 +28,13 @@ class MonteCarloSimulation:
         """
         self.weights = weights
         self.num = num
-        self.lru = LRUCache(hot_layer_constraint)
-        if preload_data:
-            self.load_data()
+        if cache_type == "LRUCache":
+            self.cache = LRUCache(param, prepopulate_cache)
+        elif cache_type == "TimeCache":
+            self.cache = TimeCache(param)
+        else:
+            raise ValueError("Invalid cache type. Use 'LRUCache' or 'TimeCache'.")
+        self.load_data()
 
     def load_dict_from_file(self, filename: str) -> Dict:
         current_dir = Path.cwd()
@@ -87,7 +93,8 @@ class MonteCarloSimulation:
         Returns:
             Tuple[int, List[Any]]: Tuple containing total count of free requests and history.
         """
-        free_requests_count = 0
+        free_scenes = 0
+        total_scenes = 0
         history: List[Any] = []
 
         # Fetch subset of data
@@ -106,17 +113,13 @@ class MonteCarloSimulation:
             feature_id = np.random.choice(list(data.keys()))
             landsat_scenes = data[feature_id]
 
-            moved_to_hot = False
             for scene in landsat_scenes:
-                if self.lru.get(scene) == -1:
-                    moved_to_hot = True
-                self.lru.put(scene)
+                total_scenes += 1
+                if self.cache.get(scene) != -1:
+                    free_scenes += 1
 
-            # Record free requests and history
-            if moved_to_hot:
-                history.append(self.lru.current_state())
-            else:
-                history.append(self.lru.current_state())
-                free_requests_count += 1
+            self.cache.put(landsat_scenes)
+            history.append(self.cache.current_state())
 
-        return free_requests_count, history
+        free_ratio = free_scenes / total_scenes if total_scenes > 0 else 0
+        return free_ratio, history  # type: ignore
