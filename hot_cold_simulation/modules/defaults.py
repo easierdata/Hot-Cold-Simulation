@@ -9,11 +9,12 @@ default_configurations = {
         "DB_PORT": "6563",
     },
     "MonteCarlo-Properties": {
-        "step_size": 0.025,
+        "step_size": 0.1,
         "num_requests": 100,
         "cache_type": "LRUCache",
-        "cache_param_increment": 10,
+        "cache_param_increment": 50,
         "prepopulate_cache": True,
         "num_runs": 32,
+        "return_type": "requests",
     },
 }

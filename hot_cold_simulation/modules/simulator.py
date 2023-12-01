@@ -17,6 +17,7 @@ class MonteCarloSimulation:
         cache_type,
         param,
         prepopulate_cache: bool = False,
+        return_type: str = "requests",
     ) -> None:
         """_summary_
 
@@ -28,6 +29,7 @@ class MonteCarloSimulation:
         """
         self.weights = weights
         self.num = num
+        self.return_type = return_type
         if cache_type == "LRUCache":
             self.cache = LRUCache(param, prepopulate_cache)
         elif cache_type == "TimeCache":
@@ -95,6 +97,7 @@ class MonteCarloSimulation:
         """
         free_scenes = 0
         total_scenes = 0
+        free_requests = 0
         history: List[Any] = []
 
         # Fetch subset of data
@@ -112,14 +115,26 @@ class MonteCarloSimulation:
                 data = counties_subset
             feature_id = np.random.choice(list(data.keys()))
             landsat_scenes = data[feature_id]
+            moved_to_hot = False
 
             for scene in landsat_scenes:
                 total_scenes += 1
                 if self.cache.get(scene) != -1:
+                    moved_to_hot = True
                     free_scenes += 1
 
+            if moved_to_hot:
+                free_requests += 1
             self.cache.put(landsat_scenes)
             history.append(self.cache.current_state())
 
         free_ratio = free_scenes / total_scenes if total_scenes > 0 else 0
-        return free_ratio, history  # type: ignore
+
+        if self.return_type == "ratio":  # type: ignore
+            return free_ratio, history  # type: ignore
+        elif self.return_type == "requests":  # type: ignore
+            return free_requests, history  # type: ignore
+        elif self.return_type == "scenes":  # type: ignore
+            return free_scenes, history  # type: ignore
+        else:
+            raise ValueError("Invalid return type specified")
