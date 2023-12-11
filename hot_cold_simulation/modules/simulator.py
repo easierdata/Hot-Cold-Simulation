@@ -120,8 +120,9 @@ class MonteCarloSimulation:
             for scene in landsat_scenes:
                 total_scenes += 1
                 if self.cache.get(scene) != -1:
-                    moved_to_hot = True
                     free_scenes += 1
+                else:
+                    moved_to_hot = True
 
             if moved_to_hot:
                 free_requests += 1
