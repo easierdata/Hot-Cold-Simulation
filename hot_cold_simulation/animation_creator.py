@@ -56,7 +56,7 @@ simulator = MonteCarloSimulation(
     weights=weights,
     cache_type=cache_type,
     param=param,
-    preload_data=True,
+    prepopulate_cache=True,
 )
 logger.info("Simulation Initialized with the following parameters\n")
 logger.info(f"Cache Type: {cache_type}")
