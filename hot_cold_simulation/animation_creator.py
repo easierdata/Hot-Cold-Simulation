@@ -46,9 +46,9 @@ logger.info("Data Loaded")
 
 # Set your desired parameters here
 num_requests = 100
-cache_type = "TimeCache"
+cache_type = "LRUCache"
 param = 250
-weights = [0.02, 0.4, 0.58]
+weights = [0.1, 0.4, 0.5]
 
 # Create an instance of the simulator
 simulator = MonteCarloSimulation(
