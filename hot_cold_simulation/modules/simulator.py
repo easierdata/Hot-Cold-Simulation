@@ -47,7 +47,7 @@ class MonteCarloSimulation:
 
     def load_data(self) -> None:
         """Load data from the pickled dictionaries."""
-        self.regions_data = self.load_dict_from_file("regions_mapping.pkl")
+        self.regions_data = self.load_dict_from_file("divisions_mapping.pkl")
         self.states_data = self.load_dict_from_file("states_mapping.pkl")
         self.counties_data = self.load_dict_from_file("counties_mapping.pkl")
 

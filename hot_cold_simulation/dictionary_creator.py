@@ -22,6 +22,10 @@ usa_landsat_path = DATA_DIR / "USA_Landsat" / "usa_landsat.shp"
 usa_landsat = gpd.read_file(usa_landsat_path)
 usa_landsat = usa_landsat.set_geometry("geometry")
 
+usa_divisions_path = DATA_DIR / "USA_Divisions" / "usa_divisions.shp"
+usa_divisions = gpd.read_file(usa_divisions_path)
+usa_divisions = usa_divisions.set_geometry("geometry")
+
 current_dir = Path.cwd()
 data_dicts = (Path(current_dir) / "dictionaries").resolve()
 
@@ -58,8 +62,10 @@ def load_dict_from_file(filename: str) -> Dict:
 regions_mapping = create_mapping_dictionary(usa_regions, usa_landsat)
 states_mapping = create_mapping_dictionary(usa_states, usa_landsat)
 counties_mapping = create_mapping_dictionary(usa_counties, usa_landsat)
+divisions_mapping = create_mapping_dictionary(usa_divisions, usa_landsat)
 
 # Save dictionaries to files
 save_dict_to_file(regions_mapping, "regions_mapping.pkl")
 save_dict_to_file(states_mapping, "states_mapping.pkl")
 save_dict_to_file(counties_mapping, "counties_mapping.pkl")
+save_dict_to_file(divisions_mapping, "divisions_mapping.pkl")
