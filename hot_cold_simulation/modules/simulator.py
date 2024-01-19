@@ -101,7 +101,7 @@ class MonteCarloSimulation:
         history: List[Any] = []
 
         # Fetch subset of data
-        regions_subset = self.fetch_data(self.regions_data, 6)
+        regions_subset = self.fetch_data(self.regions_data, 9)
         states_subset = self.fetch_data(self.states_data, 49)
         counties_subset = self.fetch_data(self.counties_data, 4437)
 
@@ -119,12 +119,12 @@ class MonteCarloSimulation:
 
             for scene in landsat_scenes:
                 total_scenes += 1
-                if self.cache.get(scene) != -1:
+                if self.cache.get(scene) != -1:  # is found
                     free_scenes += 1
-                else:
+                elif self.cache.get(scene) == -1:  # is not found
                     moved_to_hot = True
 
-            if moved_to_hot:
+            if not moved_to_hot:
                 free_requests += 1
             self.cache.put(landsat_scenes)
             history.append(self.cache.current_state())
