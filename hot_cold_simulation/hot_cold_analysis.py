@@ -146,7 +146,9 @@ def run_simulation(
                 prepopulate_cache=prepopulate_cache,
                 return_type=return_type,
             )
-            average_free_requests = simulator.monte_carlo_simulation(num_runs)  # type: ignore
+            results = simulator.monte_carlo_simulation(num_runs)
+            total_free_requests = sum(results)
+            average_free_requests = total_free_requests / num_runs
             weight_results[tuple(weights)] = average_free_requests
 
             logger.info(

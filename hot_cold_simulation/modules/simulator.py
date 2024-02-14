@@ -65,7 +65,7 @@ class MonteCarloSimulation:
         # take the first 'count' items, and then convert it back to a dictionary.
         return dict(list(data.items())[:count])
 
-    def monte_carlo_simulation(self, num_runs: int) -> float:
+    def monte_carlo_simulation(self, num_runs: int) -> list:
         """Execute the Monte Carlo simulation for a specified number of runs using parallel threads.
 
         Args:
@@ -84,10 +84,7 @@ class MonteCarloSimulation:
                 free_requests, _ = f.result()  # Extract only the free_requests_count
                 results.append(free_requests)
 
-        total_free_requests = sum(results)
-        average_free_requests = total_free_requests / num_runs
-
-        return average_free_requests
+        return results
 
     def run_simulation(self) -> Tuple[int, List[Any]]:
         """Execute the simulation.
