@@ -6,17 +6,13 @@ import geopandas as gpd  # type: ignore
 from modules.config import DATA_DIR  # type: ignore
 
 ### Data Import
-usa_states_path = DATA_DIR / "USA_States" / "usa_states.shp"
-usa_states = gpd.read_file(usa_states_path)
-usa_states = usa_states.set_geometry("geometry")
+# usa_states_path = DATA_DIR / "USA_States" / "usa_states.shp"
+# usa_states = gpd.read_file(usa_states_path)
+# usa_states = usa_states.set_geometry("geometry")
 
-usa_counties_path = DATA_DIR / "USA_Counties" / "usa_counties.shp"
-usa_counties = gpd.read_file(usa_counties_path)
-usa_counties = usa_counties.set_geometry("geometry")
-
-usa_regions_path = DATA_DIR / "USA_Regions" / "usa_regions.shp"
-usa_regions = gpd.read_file(usa_regions_path)
-usa_regions = usa_regions.set_geometry("geometry")
+# usa_counties_path = DATA_DIR / "USA_Counties" / "usa_counties.shp"
+# usa_counties = gpd.read_file(usa_counties_path)
+# usa_counties = usa_counties.set_geometry("geometry")
 
 usa_landsat_path = DATA_DIR / "USA_Landsat" / "usa_landsat.shp"
 usa_landsat = gpd.read_file(usa_landsat_path)
@@ -59,13 +55,13 @@ def load_dict_from_file(filename: str) -> Dict:
 
 
 # Create mapping dictionaries
-regions_mapping = create_mapping_dictionary(usa_regions, usa_landsat)
-states_mapping = create_mapping_dictionary(usa_states, usa_landsat)
-counties_mapping = create_mapping_dictionary(usa_counties, usa_landsat)
 divisions_mapping = create_mapping_dictionary(usa_divisions, usa_landsat)
+# states_mapping = create_mapping_dictionary(usa_states, usa_landsat)
+# counties_mapping = create_mapping_dictionary(usa_counties, usa_landsat)
+# divisions_mapping = create_mapping_dictionary(usa_divisions, usa_landsat)
 
 # Save dictionaries to files
-save_dict_to_file(regions_mapping, "regions_mapping.pkl")
-save_dict_to_file(states_mapping, "states_mapping.pkl")
-save_dict_to_file(counties_mapping, "counties_mapping.pkl")
-save_dict_to_file(divisions_mapping, "divisions_mapping.pkl")
+save_dict_to_file(divisions_mapping, "regions_mapping.pkl")
+# save_dict_to_file(states_mapping, "states_mapping.pkl")
+# save_dict_to_file(counties_mapping, "counties_mapping.pkl")
+# save_dict_to_file(divisions_mapping, "divisions_mapping.pkl")
