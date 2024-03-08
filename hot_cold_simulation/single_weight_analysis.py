@@ -51,12 +51,12 @@ def setup_logger(name, level=logging.INFO):
 logger = setup_logger("Single Simulation")
 
 
-def run_analysis() -> dict:
+def run_analysis(weights) -> dict:
     """
     This function runs the analysis for the Monte Carlo Simulation.
     """
     num_requests = 100
-    weights = [0, 0, 1]
+    weights = weights
     cache_type = "LRUCache"
     parameters_list = np.linspace(10, 800, 20)
     init_time = time.time()
@@ -87,7 +87,6 @@ def run_simulation(
     prepopulate_cache,
     return_type,
 ):
-    start_time = time.time()
     parameter_results = {}
     for ijx, parameter in enumerate(parameters_list, start=1):
         parameter = int(parameter)
@@ -119,47 +118,85 @@ def run_simulation(
     return parameter_results
 
 
-results = run_analysis()
-x = np.array(list(results.keys())) / 8.6
-values = list(results.values())
-y = np.array([val[0] for val in values])
-yerr = np.array([val[1] for val in values])
+def plot_single_sim(weights):
+    results = run_analysis(weights)
+    x = np.array(list(results.keys())) / 8.6
+    values = list(results.values())
+    y = np.array([val[0] for val in values])
+    yerr = np.array([val[1] for val in values])
 
-plt.figure(figsize=(10, 6))
-plt.errorbar(
-    x,
-    y,
-    yerr=yerr,
-    fmt="o",
-    color="b",
-    ecolor="lightgray",
-    elinewidth=3,
-    capsize=5,
-    capthick=2,
-    markersize=4,
-)
-# Calculate coefficients of the line of best fit
-coefficients = np.polyfit(x, y, 2)  # 1 means linear (degree of the polynomial)
-# Create a polynomial from coefficients, representing the line of best fit
-polynomial = np.poly1d(coefficients)
+    plt.figure(figsize=(10, 6))
+    plt.errorbar(
+        x,
+        y,
+        yerr=yerr,
+        fmt="o",
+        color="b",
+        ecolor="lightgray",
+        elinewidth=3,
+        capsize=5,
+        capthick=2,
+        markersize=4,
+    )
+    # Calculate coefficients of the line of best fit
+    coefficients = np.polyfit(x, y, 2)  # 1 means linear (degree of the polynomial)
+    # Create a polynomial from coefficients, representing the line of best fit
+    polynomial = np.poly1d(coefficients)
 
-# Generate y-values for the line of best fit based on x-values
-y_fit = polynomial(x)
-# Plot the line of best fit
-plt.plot(x, y_fit, "-", color="red")  # '-' specifies a solid line
-y_mean = np.mean(y)
-ss_tot = np.sum((y - y_mean) ** 2)  # Total sum of squares
-ss_res = np.sum((y - y_fit) ** 2)  # Residual sum of squares
-r_squared = 1 - (ss_res / ss_tot)
+    # Generate y-values for the line of best fit based on x-values
+    y_fit = polynomial(x)
+    # Plot the line of best fit
+    plt.plot(x, y_fit, "-", color="red")  # '-' specifies a solid line
+    y_mean = np.mean(y)
+    ss_tot = np.sum((y - y_mean) ** 2)  # Total sum of squares
+    ss_res = np.sum((y - y_fit) ** 2)  # Residual sum of squares
+    r_squared = 1 - (ss_res / ss_tot)
 
-# Add R^2 as text on the plot
-plt.text(
-    0.05, 0.95, f"$R^2 = {r_squared:.3f}$", transform=plt.gca().transAxes, fontsize=12
-)
-plt.xticks(range(0, 100, 5))
-plt.yticks(range(0, 100, 5))
-plt.grid(True, which="both", linestyle="--", linewidth=0.5)
-plt.title("Free Request Percentage vs Constraint Percentage")
-plt.ylabel("Percent of Free Requests")
-plt.xlabel("Percent of Hot Layer in Relation to Cold Layer")
-plt.show()
+    # Add R^2 as text on the plot
+    plt.text(
+        0.05,
+        0.95,
+        f"$R^2 = {r_squared:.3f}$",
+        transform=plt.gca().transAxes,
+        fontsize=12,
+    )
+    plt.xticks(range(0, 100, 5))
+    plt.yticks(range(0, 100, 5))
+    plt.grid(True, which="both", linestyle="--", linewidth=0.5)
+    plt.title("Even Weight with Order 2 Line of Best Fit")
+    plt.ylabel("Percent of Free Requests")
+    plt.xlabel("Percent of Hot Layer in Relation to Cold Layer")
+    plt.show()
+
+
+def multiplot():
+    county_result = run_analysis([0, 0, 1])
+    state_result = run_analysis([0, 1, 0])
+    region_result = run_analysis([1, 0, 0])
+    even_result = run_analysis([0.33, 0.33, 0.34])
+    x = np.array(list(county_result.keys())) / 8.6
+    county_values = list(county_result.values())
+    state_values = list(state_result.values())
+    region_values = list(region_result.values())
+    even_values = list(even_result.values())
+    county_y = np.array([val[0] for val in county_values])
+    state_y = np.array([val[0] for val in state_values])
+    region_y = np.array([val[0] for val in region_values])
+    even_y = np.array([val[0] for val in even_values])
+
+    plt.figure(figsize=(10, 6))
+    plt.plot(x, county_y, color="blue", label="All County")
+    plt.plot(x, state_y, color="red", label="All State")
+    plt.plot(x, region_y, color="green", label="All Region")
+    plt.plot(x, even_y, color="orange", label="Even Ratio")
+    plt.legend()
+    plt.title("Request Types Result Comparison")
+    plt.ylabel("Percentage of Free Requests")
+    plt.xlabel("Percentage of Hot Layer in Relation to Cold Layer")
+    plt.xticks(range(0, 100, 5))
+    plt.yticks(range(0, 100, 5))
+    plt.grid(True, which="both", linestyle="--", linewidth=0.5)
+    plt.show()
+
+
+multiplot()
