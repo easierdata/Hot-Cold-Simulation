@@ -57,8 +57,8 @@ def run_analysis(weights) -> dict:
     """
     num_requests = 100
     weights = weights
-    cache_type = "LRUCache"
-    parameters_list = np.linspace(10, 800, 20)
+    cache_type = "TimeCache"
+    parameters_list = np.linspace(2, 10, 9)
     init_time = time.time()
     num_runs = 100
     prepopulate_cache = True

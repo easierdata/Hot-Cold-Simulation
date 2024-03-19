@@ -61,7 +61,7 @@ divisions_mapping = create_mapping_dictionary(usa_divisions, usa_landsat)
 # divisions_mapping = create_mapping_dictionary(usa_divisions, usa_landsat)
 
 # Save dictionaries to files
-save_dict_to_file(divisions_mapping, "regions_mapping.pkl")
+save_dict_to_file(divisions_mapping, "divisions_mapping.pkl")
 # save_dict_to_file(states_mapping, "states_mapping.pkl")
 # save_dict_to_file(counties_mapping, "counties_mapping.pkl")
 # save_dict_to_file(divisions_mapping, "divisions_mapping.pkl")
