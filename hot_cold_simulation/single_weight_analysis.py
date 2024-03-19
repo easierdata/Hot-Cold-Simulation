@@ -58,7 +58,7 @@ def run_analysis(weights) -> dict:
     num_requests = 100
     weights = weights
     cache_type = "TimeCache"
-    parameters_list = np.linspace(2, 10, 9)
+    parameters_list = np.linspace(1, 10, 10)
     init_time = time.time()
     num_runs = 100
     prepopulate_cache = True
@@ -169,7 +169,7 @@ def plot_single_sim(weights):
     plt.show()
 
 
-def multiplot():
+def multiplot_LRU():
     county_result = run_analysis([0, 0, 1])
     state_result = run_analysis([0, 1, 0])
     region_result = run_analysis([1, 0, 0])
@@ -199,4 +199,64 @@ def multiplot():
     plt.show()
 
 
-multiplot()
+def multiplot_Time():
+    county_result = run_analysis([0, 0, 1])
+    state_result = run_analysis([0, 1, 0])
+    region_result = run_analysis([1, 0, 0])
+    even_result = run_analysis([0.33, 0.33, 0.34])
+    x = np.array(list(county_result.keys()))
+    county_values = list(county_result.values())
+    state_values = list(state_result.values())
+    region_values = list(region_result.values())
+    even_values = list(even_result.values())
+    county_y = np.array([val[0] for val in county_values])
+    state_y = np.array([val[0] for val in state_values])
+    region_y = np.array([val[0] for val in region_values])
+    even_y = np.array([val[0] for val in even_values])
+
+    plt.figure(figsize=(10, 6))
+    plt.plot(x, county_y, color="blue", label="All County")
+    plt.plot(x, state_y, color="red", label="All State")
+    plt.plot(x, region_y, color="green", label="All Region")
+    plt.plot(x, even_y, color="orange", label="Even Ratio")
+    plt.legend()
+    plt.title("Request Types Result Comparison")
+    plt.ylabel("Percentage of Free Requests")
+    plt.xlabel("Number of Epochs Each Request Lasts For")
+    plt.xticks(range(1, 11, 1))
+    plt.yticks(range(0, 100, 5))
+    plt.grid(True, which="both", linestyle="--", linewidth=0.5)
+    plt.show()
+
+
+def multiplot_LRU_Time():
+    county_result = run_analysis([0, 0, 1])
+    state_result = run_analysis([0, 1, 0])
+    region_result = run_analysis([1, 0, 0])
+    even_result = run_analysis([0.33, 0.33, 0.34])
+    x = np.array(list(county_result.keys())) / 8.6
+    county_values = list(county_result.values())
+    state_values = list(state_result.values())
+    region_values = list(region_result.values())
+    even_values = list(even_result.values())
+    county_y = np.array([val[0] for val in county_values])
+    state_y = np.array([val[0] for val in state_values])
+    region_y = np.array([val[0] for val in region_values])
+    even_y = np.array([val[0] for val in even_values])
+
+    plt.figure(figsize=(10, 6))
+    plt.plot(x, county_y, color="blue", label="All County")
+    plt.plot(x, state_y, color="red", label="All State")
+    plt.plot(x, region_y, color="green", label="All Region")
+    plt.plot(x, even_y, color="orange", label="Even Ratio")
+    plt.legend()
+    plt.title("Request Types Result Comparison")
+    plt.ylabel("Percentage of Free Requests")
+    plt.xlabel("Percentage of Hot Layer in Relation to Cold Layer")
+    plt.xticks(range(0, 100, 5))
+    plt.yticks(range(0, 100, 5))
+    plt.grid(True, which="both", linestyle="--", linewidth=0.5)
+    plt.show()
+
+
+multiplot_Time()
