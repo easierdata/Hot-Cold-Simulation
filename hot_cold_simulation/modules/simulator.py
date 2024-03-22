@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Tuple
 
 import numpy as np
+from modules.combination_cache import CombinationCache
 from modules.lru_cache import LRUCache  # type: ignore
 from modules.time_cache import TimeCache
 
@@ -34,6 +35,8 @@ class MonteCarloSimulation:
             self.cache = LRUCache(param, prepopulate_cache)
         elif cache_type == "TimeCache":
             self.cache = TimeCache(param)
+        elif cache_type == "CombinationCache":
+            self.cache = CombinationCache(param, prepopulate=prepopulate_cache)
         else:
             raise ValueError("Invalid cache type. Use 'LRUCache' or 'TimeCache'.")
         self.load_data()

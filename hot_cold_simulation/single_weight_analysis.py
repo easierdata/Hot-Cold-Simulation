@@ -57,8 +57,8 @@ def run_analysis(weights) -> dict:
     """
     num_requests = 100
     weights = weights
-    cache_type = "TimeCache"
-    parameters_list = np.linspace(1, 10, 10)
+    cache_type = "CombinationCache"
+    parameters_list = np.linspace(1, 886, 20)
     init_time = time.time()
     num_runs = 100
     prepopulate_cache = True
@@ -229,7 +229,7 @@ def multiplot_Time():
     plt.show()
 
 
-def multiplot_LRU_Time():
+def multiplot_Combination():
     county_result = run_analysis([0, 0, 1])
     state_result = run_analysis([0, 1, 0])
     region_result = run_analysis([1, 0, 0])
@@ -259,4 +259,4 @@ def multiplot_LRU_Time():
     plt.show()
 
 
-multiplot_Time()
+multiplot_Combination()
