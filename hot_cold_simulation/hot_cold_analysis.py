@@ -3,7 +3,7 @@ import time
 from os import getenv
 from pathlib import Path
 
-from dotenv import load_dotenv
+import dotenv
 import numpy as np
 import pandas as pd  # type: ignore
 
