@@ -165,4 +165,3 @@ cython_debug/
 # Project Specific
 /data
 /config
-/stochastic_paths

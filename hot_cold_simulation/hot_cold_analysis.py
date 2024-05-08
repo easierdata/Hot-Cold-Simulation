@@ -3,7 +3,7 @@ import time
 from os import getenv
 from pathlib import Path
 
-import dotenv
+from dotenv import load_dotenv
 import numpy as np
 import pandas as pd  # type: ignore
 
@@ -257,5 +257,5 @@ def save_weight_results(simulator_results):
     df.to_csv(results_csv_path, index=False)
 
 
-if __name__ == "__main__":
-    run_analysis()
+
+run_analysis()
